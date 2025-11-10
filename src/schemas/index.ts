@@ -21,7 +21,7 @@ export const SCHEMA_INFO = {
  * Get the schema for a specific manifest version
  * This can be used with JSON schema validators like AJV
  */
-export function getSchemaForVersion(version: 2 | 3) {
+export function getSchemaForVersion(_version: 2 | 3) {
   return {
     ...chromeManifestSchema,
     // The schema uses conditional logic to handle both versions

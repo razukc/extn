@@ -9,7 +9,6 @@ import { Logger } from '../utils/logger.js';
 import { ValidationError, FileSystemError } from '../utils/errors.js';
 import { TemplateEngine } from '../core/template/engine.js';
 import { TemplateRegistry } from '../core/template/registry.js';
-import { ManifestGenerator } from '../core/manifest/generator.js';
 import { ManifestValidator } from '../core/manifest/validator.js';
 
 export interface CreateCommandOptions {
