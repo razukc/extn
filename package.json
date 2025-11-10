@@ -1,6 +1,6 @@
 {
   "name": "b-tools",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "CLI for building Chrome extensions",
   "main": "dist/index.js",
   "bin": {
