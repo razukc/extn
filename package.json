@@ -42,7 +42,7 @@
   "author": "razukc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/razukc/b-tools.git"
+    "url": "git+https://github.com/razukc/b-tools.git"
   },
   "bugs": {
     "url": "https://github.com/razukc/b-tools/issues"
