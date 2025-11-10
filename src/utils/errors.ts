@@ -1,5 +1,5 @@
 /**
- * Base error class for all b-tools errors
+ * Base error class for all extn errors
  * Provides structured error handling with error codes and context
  */
 export class BToolsError extends Error {

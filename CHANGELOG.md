@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- Initial release of b-tools
+- Initial release of extn
 - Project scaffolding with `create` command
 - Basic build pipeline with `build` command
 - Manifest V3 validation

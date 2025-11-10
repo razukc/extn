@@ -1,10 +1,10 @@
 {
-  "name": "b-tools",
+  "name": "extn",
   "version": "0.1.0",
   "description": "CLI for building Chrome extensions",
   "main": "dist/index.js",
   "bin": {
-    "b-tools": "dist/cli/index.js"
+    "extn": "dist/cli/index.js"
   },
   "type": "module",
   "files": [
@@ -42,12 +42,12 @@
   "author": "razukc",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/razukc/b-tools.git"
+    "url": "git+https://github.com/razukc/extn.git"
   },
   "bugs": {
-    "url": "https://github.com/razukc/b-tools/issues"
+    "url": "https://github.com/razukc/extn/issues"
   },
-  "homepage": "https://github.com/razukc/b-tools#readme",
+  "homepage": "https://github.com/razukc/extn#readme",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.3.0",

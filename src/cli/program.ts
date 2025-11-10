@@ -13,7 +13,7 @@ export function createProgram(): Command {
   const program = new Command();
 
   program
-    .name('b-tools')
+    .name('extn')
     .description('CLI for building Chrome extensions')
     .version('0.1.0');
 

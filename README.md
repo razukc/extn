@@ -1,4 +1,4 @@
-# b-tools
+# extn
 
 A TypeScript-based CLI for building Chrome Manifest V3 extensions with modern tooling. Scaffold production-ready Chrome extensions with sensible defaults, TypeScript support, and a modern build pipeline powered by Vite.
 
@@ -17,13 +17,13 @@ A TypeScript-based CLI for building Chrome Manifest V3 extensions with modern to
 Install globally:
 
 ```bash
-npm install -g b-tools
+npm install -g extn
 ```
 
 Or use with npx (no installation required):
 
 ```bash
-npx b-tools create my-extension
+npx extn create my-extension
 ```
 
 ## Quick Start
@@ -32,7 +32,7 @@ Create a new Chrome extension in seconds:
 
 ```bash
 # Create a new extension
-b-tools create my-extension
+extn create my-extension
 
 # Navigate to the project
 cd my-extension
@@ -63,9 +63,9 @@ Create a new Chrome extension project with a complete file structure, manifest, 
 **Usage:**
 
 ```bash
-b-tools create my-extension
-b-tools create my-extension --template vanilla
-b-tools create my-extension --directory ./projects
+extn create my-extension
+extn create my-extension --template vanilla
+extn create my-extension --directory ./projects
 ```
 
 **Options:**
@@ -78,13 +78,13 @@ b-tools create my-extension --directory ./projects
 
 ```bash
 # Create with default settings
-b-tools create my-extension
+extn create my-extension
 
 # Create in a specific directory
-b-tools create my-extension --directory ~/projects
+extn create my-extension --directory ~/projects
 
 # Use a specific template (currently only vanilla available)
-b-tools create my-extension --template vanilla
+extn create my-extension --template vanilla
 ```
 
 **What gets created:**
@@ -110,10 +110,10 @@ my-extension/
 
 ### `--version`
 
-Display the current version of b-tools.
+Display the current version of extn.
 
 ```bash
-b-tools --version
+extn --version
 ```
 
 ### `--help`
@@ -121,13 +121,13 @@ b-tools --version
 Display help information for all commands.
 
 ```bash
-b-tools --help
-b-tools create --help
+extn --help
+extn create --help
 ```
 
 ## Generated Project Structure
 
-Projects created with b-tools include:
+Projects created with extn include:
 
 - **Manifest V3** - Valid Chrome extension manifest with all required fields
 - **Vite Build System** - Fast development server with HMR and optimized production builds
@@ -254,7 +254,7 @@ Contributions are welcome! Please follow these guidelines:
 ### Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/b-tools.git`
+2. Clone your fork: `git clone https://github.com/your-username/extn.git`
 3. Install dependencies: `npm install`
 4. Create a branch: `git checkout -b feature/your-feature`
 
@@ -294,7 +294,7 @@ npm run build
 
 # Test the create command
 npm link
-b-tools create test-extension
+extn create test-extension
 cd test-extension
 npm install
 npm run build
@@ -337,10 +337,10 @@ Follow conventional commits:
 
 ## License
 
-MIT © b-tools
+MIT © extn
 
 ## Support
 
-- 🐛 [Report a bug](https://github.com/razukc/b-tools/issues)
-- 💡 [Request a feature](https://github.com/razukc/b-tools/issues)
-- 📖 [Read the docs](https://github.com/razukc/b-tools#readme)
+- 🐛 [Report a bug](https://github.com/razukc/extn/issues)
+- 💡 [Request a feature](https://github.com/razukc/extn/issues)
+- 📖 [Read the docs](https://github.com/razukc/extn#readme)
