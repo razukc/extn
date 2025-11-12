@@ -1,0 +1,45 @@
+## Development
+
+Start the development server with hot module replacement:
+
+```bash
+npm run dev
+```
+
+This will:
+1. Start Vite dev server with HMR
+2. Build your extension to `dist/`
+3. Launch Chrome with your extension loaded
+4. Open DevTools automatically
+5. Use a persistent profile in `.dev-profile/`
+
+Your changes will automatically reload in the browser!
+
+### Configuration
+
+You can customize the development experience by editing `web-ext-config.mjs`:
+
+- Change browser target (chromium, firefox, edge)
+- Customize profile location
+- Modify browser launch options
+- Configure start URLs
+
+## Troubleshooting
+
+### Browser doesn't open
+- Ensure Chrome/Chromium is installed
+- Check that port 5173 is not in use
+- Try running `npm run build` first
+
+### Extension doesn't load
+- Check the console for build errors
+- Verify manifest.json is valid
+- Clear the `.dev-profile/` directory and try again
+
+### Port already in use
+- Vite will automatically try the next available port
+- You can configure a specific port in `vite.config.js`
+
+### Profile issues
+- Delete the `.dev-profile/` directory to reset your development profile
+- The profile is separate from your main browser profile

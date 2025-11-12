@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "dev": "concurrently \"vite\" \"web-ext run --target chromium --arg=--auto-open-devtools-for-tabs --source-dir=./dist --config=./web-ext-config.mjs\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "web-ext": "^8.3.0",
+    "concurrently": "^9.1.0",
+    "@crxjs/vite-plugin": "^2.2.1",
+    "vite": "^7.2.2"
+  },
+  "name": "test-workflow-project",
+  "version": "1.0.0",
+  "description": "test-workflow-project - Chrome Extension",
+  "type": "module",
+  "dependencies": {}
+}

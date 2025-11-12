@@ -56,6 +56,26 @@ npm run prepublishOnly # Build and test before publish
 - **Test timeout**: 30 seconds
 - **Environment**: Node.js with globals enabled
 
+### Test Output Management
+
+When running test suites, always save output to a temp file for review:
+
+```bash
+# Save test output to temp file (output can be very long)
+npm test 2>&1 | tee test-temp/test-output.txt
+
+# Then read the output from the file
+cat test-temp/test-output.txt
+# or for last N lines
+tail -n 50 test-temp/test-output.txt
+```
+
+This practice:
+- Prevents overwhelming console output
+- Allows for easier review and analysis
+- Preserves full test results for debugging
+- Works well with long-running test suites
+
 ## Shell Commands
 
 - **ALWAYS use Unix/Bash commands** - Even on Windows (Git Bash/MINGW64 environment)

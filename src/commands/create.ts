@@ -72,8 +72,8 @@ export async function createCommand(
       );
     }
 
-    // Step 4: Get template
-    const template = templateRegistry.get(options.template);
+    // Step 4: Get template with base template merged
+    const template = templateRegistry.getWithBase(options.template);
     if (!template) {
       throw new ValidationError(
         `Template not found: ${options.template}`,
@@ -95,8 +95,22 @@ export async function createCommand(
       description: `${projectName} - Chrome Extension`,
     };
 
-    // Step 7: Render template files
-    const templateFiles = await templateEngine.render(template.files, context);
+    // Step 7: Render template files with inheritance support
+    // Get base template path if template extends base
+    let baseTemplatePath: string | undefined;
+    if (template.extends) {
+      const baseTemplate = templateRegistry.get(template.extends);
+      if (baseTemplate) {
+        baseTemplatePath = baseTemplate.files;
+        logger.debug(`Template extends: ${template.extends}`);
+      }
+    }
+
+    const templateFiles = await templateEngine.renderWithInheritance(
+      template.files,
+      baseTemplatePath,
+      context
+    );
     logger.debug(`Rendered ${templateFiles.length} template files`);
 
     // Step 8: Write template files to temp directory

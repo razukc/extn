@@ -13,6 +13,8 @@ export interface Template {
   files: string; // Path to template files directory
   dependencies: string[];
   devDependencies: string[];
+  scripts?: Record<string, string>; // npm scripts to include in package.json
+  extends?: string; // Base template id to extend from
 }
 
 export class TemplateRegistry {
@@ -28,6 +30,18 @@ export class TemplateRegistry {
   private loadTemplates(): void {
     // Get the templates directory path
     const templatesDir = this.getTemplatesDir();
+
+    // Load base template first
+    const baseMetaPath = path.join(templatesDir, 'base', 'template.json');
+    const baseFilesPath = path.join(templatesDir, 'base', 'files');
+
+    if (fs.existsSync(baseMetaPath)) {
+      const metadata = fs.readJsonSync(baseMetaPath);
+      this.templates.set('base', {
+        ...metadata,
+        files: baseFilesPath,
+      });
+    }
 
     // Load vanilla template
     const vanillaMetaPath = path.join(templatesDir, 'vanilla', 'template.json');
@@ -47,6 +61,43 @@ export class TemplateRegistry {
    */
   get(id: string): Template | undefined {
     return this.templates.get(id);
+  }
+
+  /**
+   * Get template with base template merged
+   * If template extends a base, returns merged template with base metadata
+   */
+  getWithBase(id: string): Template | undefined {
+    const template = this.templates.get(id);
+    if (!template) {
+      return undefined;
+    }
+
+    // If template doesn't extend anything, return as-is
+    if (!template.extends) {
+      return template;
+    }
+
+    // Get base template
+    const baseTemplate = this.templates.get(template.extends);
+    if (!baseTemplate) {
+      // Base template not found, return template as-is
+      return template;
+    }
+
+    // Merge base and template metadata
+    return {
+      ...template,
+      dependencies: [...baseTemplate.dependencies, ...template.dependencies],
+      devDependencies: [
+        ...baseTemplate.devDependencies,
+        ...template.devDependencies,
+      ],
+      scripts: {
+        ...(baseTemplate.scripts || {}),
+        ...(template.scripts || {}),
+      },
+    };
   }
 
   /**

@@ -2,9 +2,14 @@
   "id": "vanilla",
   "name": "Vanilla JavaScript",
   "description": "A basic Chrome extension template with vanilla JavaScript, Vite, and @crxjs/vite-plugin",
+  "extends": "base",
   "dependencies": [],
   "devDependencies": [
     "@crxjs/vite-plugin@^2.2.1",
     "vite@^7.2.2"
-  ]
+  ],
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview"
+  }
 }

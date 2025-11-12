@@ -1,0 +1,100 @@
+# {{projectName}}
+
+A Chrome Manifest V3 extension built with vanilla JavaScript/TypeScript and Vite.
+
+## Features
+
+- ⚡ Vite-powered build system with HMR
+- 📦 Manifest V3 Chrome extension
+- ✅ TypeScript support (optional to use)
+- 🎨 Example popup, background service worker, and content script
+- 🔧 Modern development workflow
+
+## Project Structure
+
+```
+{{projectName}}/
+├── src/
+│   ├── popup/
+│   │   ├── popup.html      # Extension popup UI
+│   │   ├── popup.js        # Popup logic
+│   │   └── styles.css      # Popup styles
+│   ├── background/
+│   │   └── background.js   # Service worker
+│   └── content/
+│       └── content.js      # Content script
+├── public/
+│   └── icons/              # Extension icons (16, 48, 128)
+├── manifest.json           # Chrome extension manifest (V3)
+├── package.json            # Project dependencies
+├── vite.config.js          # Vite configuration
+├── web-ext-config.mjs      # Browser development configuration
+└── tsconfig.json           # TypeScript configuration
+```
+
+## Getting Started
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+<!-- DEV_WORKFLOW_PARTIAL_PLACEHOLDER -->
+
+### Build for Production
+
+Build the extension for production:
+
+```bash
+npm run build
+```
+
+This creates an optimized build in the `dist/` folder with:
+- Minified JavaScript bundles
+- Optimized assets
+- Validated manifest
+- Ready for Chrome Web Store submission
+
+### Load in Chrome
+
+1. Open Chrome and navigate to `chrome://extensions`
+2. Enable "Developer mode" (toggle in top-right corner)
+3. Click "Load unpacked"
+4. Select the `dist` folder from your project
+
+## Available Scripts
+
+- `npm run dev` - Start development server with browser auto-launch
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## Customization
+
+### Manifest
+
+Edit `manifest.json` to customize your extension:
+- Change name, description, and version
+- Add or remove permissions
+- Configure content script match patterns
+- Update icons and popup settings
+
+### Vite Configuration
+
+Edit `vite.config.js` to customize the build:
+- Change output directory
+- Add plugins
+- Configure dev server options
+- Modify build optimization settings
+
+## Resources
+
+- [Chrome Extension Documentation](https://developer.chrome.com/docs/extensions/)
+- [Manifest V3 Guide](https://developer.chrome.com/docs/extensions/mv3/intro/)
+- [Vite Documentation](https://vitejs.dev/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+
+## License
+
+MIT
+
