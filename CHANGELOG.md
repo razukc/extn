@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/razukc/extn/compare/v0.1.3...v0.2.0) (2025-11-12)
+
+### Features
+
+* add Browser Preview workflow and template inheritance system ([a387dc1](https://github.com/razukc/extn/commit/a387dc161cb7572a0defe2707fe65f715f1843fb))
+
 ## [Unreleased]
 
 ### Features
