@@ -11,7 +11,6 @@ This will:
 2. Build your extension to `dist/`
 3. Launch Chrome with your extension loaded
 4. Open DevTools automatically
-5. Use a persistent profile in `.dev-profile/`
 
 Your changes will automatically reload in the browser!
 
@@ -20,7 +19,6 @@ Your changes will automatically reload in the browser!
 You can customize the development experience by editing `web-ext-config.mjs`:
 
 - Change browser target (chromium, firefox, edge)
-- Customize profile location
 - Modify browser launch options
 - Configure start URLs
 
@@ -34,12 +32,8 @@ You can customize the development experience by editing `web-ext-config.mjs`:
 ### Extension doesn't load
 - Check the console for build errors
 - Verify manifest.json is valid
-- Clear the `.dev-profile/` directory and try again
+- Try restarting the dev server
 
 ### Port already in use
 - Vite will automatically try the next available port
 - You can configure a specific port in `vite.config.js`
-
-### Profile issues
-- Delete the `.dev-profile/` directory to reset your development profile
-- The profile is separate from your main browser profile
