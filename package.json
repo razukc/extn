@@ -1,6 +1,6 @@
 {
   "name": "extn",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CLI for building Chrome extensions",
   "main": "dist/index.js",
   "bin": {

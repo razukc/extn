@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2](https://github.com/razukc/extn/compare/v0.2.1...v0.2.2) (2025-11-13)
+
+### Cleanup
+
+* remove unused specs and references to 'b-tools'
+
 ## [0.2.1](https://github.com/razukc/extn/compare/v0.2.0...v0.2.1) (2025-11-13)
 
 ### Documentation
