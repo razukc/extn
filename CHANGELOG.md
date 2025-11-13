@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1](https://github.com/razukc/extn/compare/v0.2.0...v0.2.1) (2025-11-13)
+
+### Documentation
+
+* add documentation files to repository ([0cf4c8b](https://github.com/razukc/extn/commit/0cf4c8bb3cdcef7a2e4746a58513e0b789403170))
+* create comprehensive documentation audit for v0.2.1 ([9f6d6f4](https://github.com/razukc/extn/commit/9f6d6f4977daf38fa762532c58ef9320f38d0cb0))
+* fix web-ext-config file extension references ([717716b](https://github.com/razukc/extn/commit/717716b51354fec1edd3429370305c231eaba0c5))
+* remove references to persistent profile feature ([4ae6330](https://github.com/razukc/extn/commit/4ae6330356cf2c40e17d0dbcd81576cb17533323))
+
 ## [0.2.0](https://github.com/razukc/extn/compare/v0.1.3...v0.2.0) (2025-11-12)
 
 ### Features
