@@ -115,6 +115,7 @@ my-extension/
 ├── manifest.json           # Chrome extension manifest (V3)
 ├── package.json            # Project dependencies
 ├── vite.config.js          # Vite configuration
+├── web-ext-config.mjs      # Browser development configuration
 └── tsconfig.json           # TypeScript configuration
 ```
 
@@ -181,7 +182,7 @@ The `npm run dev` command provides a complete development experience:
 
 **Customization:**
 
-Edit `web-ext-config.js` in your project to customize:
+Edit `web-ext-config.mjs` in your project to customize:
 - Browser target (Chrome, Firefox, Edge)
 - Profile location
 - Start URLs
@@ -298,7 +299,7 @@ npm install
 **Solution:**
 - Ensure Chrome/Chromium is installed on your system
 - Check that `web-ext` can find your browser binary
-- Try specifying a custom browser path in `web-ext-config.js`
+- Try specifying a custom browser path in `web-ext-config.mjs`
 - On Linux, ensure Chrome is in your PATH
 
 ### Extension doesn't reload on changes
