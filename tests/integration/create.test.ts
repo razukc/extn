@@ -334,15 +334,11 @@ describe('create command integration', () => {
       expect(packageJson.scripts.build).toBe('vite build');
       expect(packageJson.scripts.preview).toBe('vite preview');
 
-      // Verify .gitignore includes .dev-profile/ (from base partial)
+      // Verify .gitignore exists and has vanilla-specific patterns
       const gitignorePath = path.join(projectPath, '.gitignore');
       expect(await fs.pathExists(gitignorePath)).toBe(true);
       
       const gitignore = await fs.readFile(gitignorePath, 'utf-8');
-      expect(gitignore).toContain('.dev-profile/');
-      expect(gitignore).toContain('Browser Preview');
-
-      // Verify .gitignore also has vanilla-specific patterns
       expect(gitignore).toContain('node_modules/');
       expect(gitignore).toContain('dist/');
 
@@ -354,7 +350,6 @@ describe('create command integration', () => {
       expect(readme).toContain('npm run dev');
       expect(readme).toContain('Start Vite dev server with HMR');
       expect(readme).toContain('Launch Chrome with your extension loaded');
-      expect(readme).toContain('.dev-profile/');
       expect(readme).toContain('web-ext-config.mjs');
       expect(readme).toContain('Troubleshooting');
 
@@ -392,7 +387,7 @@ describe('create command integration', () => {
           encoding: 'utf-8',
           stdio: 'pipe',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If npm install fails, capture the error output
         throw new Error(`npm install failed: ${error.message}\n${error.stdout}\n${error.stderr}`);
       }
@@ -462,7 +457,7 @@ describe('create command integration', () => {
           encoding: 'utf-8',
           stdio: 'pipe',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         throw new Error(`npm install failed: ${error.message}`);
       }
 
@@ -539,4 +534,498 @@ describe('create command integration', () => {
     
     return files;
   }
+
+  describe('React template', () => {
+    it('should merge package.json correctly with base template', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-react-package-merge';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = await fs.readJson(packageJsonPath);
+
+        // Requirement 1.1: Verify dev script is inherited from base template
+        expect(packageJson.scripts).toBeDefined();
+        expect(packageJson.scripts.dev).toBeDefined();
+        expect(packageJson.scripts.dev).toContain('concurrently');
+        expect(packageJson.scripts.dev).toContain('vite');
+        expect(packageJson.scripts.dev).toContain('web-ext run');
+        expect(packageJson.scripts.dev).toContain('--target chromium');
+        expect(packageJson.scripts.dev).toContain('--source-dir=./dist');
+        expect(packageJson.scripts.dev).toContain('--config=./web-ext-config.mjs');
+
+        // Requirement 1.4: Verify web-ext and concurrently dependencies are included
+        expect(packageJson.devDependencies).toBeDefined();
+        expect(packageJson.devDependencies['web-ext']).toBe('^8.3.0');
+        expect(packageJson.devDependencies.concurrently).toBe('^9.1.0');
+
+        // Requirement 1.5: Verify React-specific scripts are included
+        expect(packageJson.scripts.build).toBe('tsc && vite build');
+        expect(packageJson.scripts.preview).toBe('vite preview');
+        expect(packageJson.scripts['type-check']).toBe('tsc --noEmit');
+
+        // Requirement 1.5: Verify React-specific dependencies are included
+        expect(packageJson.dependencies).toBeDefined();
+        expect(packageJson.dependencies.react).toBe('^18.3.0');
+        expect(packageJson.dependencies['react-dom']).toBe('^18.3.0');
+
+        // Requirement 1.5: Verify React-specific devDependencies are included
+        expect(packageJson.devDependencies['@crxjs/vite-plugin']).toBe('^2.2.1');
+        expect(packageJson.devDependencies['@types/chrome']).toBe('^0.0.270');
+        expect(packageJson.devDependencies['@types/react']).toBe('^18.3.0');
+        expect(packageJson.devDependencies['@types/react-dom']).toBe('^18.3.0');
+        expect(packageJson.devDependencies['@vitejs/plugin-react']).toBe('^4.3.0');
+        expect(packageJson.devDependencies.typescript).toBe('^5.6.0');
+        expect(packageJson.devDependencies.vite).toBe('^7.2.2');
+
+        // Verify package.json structure
+        expect(packageJson.name).toBe(projectName);
+        expect(packageJson.version).toBe('1.0.0');
+        expect(packageJson.type).toBe('module');
+
+        // Verify no duplicate scripts or dependencies
+        const scriptKeys = Object.keys(packageJson.scripts);
+        const uniqueScriptKeys = new Set(scriptKeys);
+        expect(scriptKeys.length).toBe(uniqueScriptKeys.size);
+
+        const devDepKeys = Object.keys(packageJson.devDependencies);
+        const uniqueDevDepKeys = new Set(devDepKeys);
+        expect(devDepKeys.length).toBe(uniqueDevDepKeys.size);
+
+        const depKeys = Object.keys(packageJson.dependencies);
+        const uniqueDepKeys = new Set(depKeys);
+        expect(depKeys.length).toBe(uniqueDepKeys.size);
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should create a complete React project structure', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-react-extension';
+        
+        const result = await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.projectPath).toBe(path.join(testDir, projectName));
+
+        const projectPath = path.join(testDir, projectName);
+
+        // Verify core files exist
+        expect(await fs.pathExists(path.join(projectPath, 'package.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'manifest.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'vite.config.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'tsconfig.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, '.gitignore'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'README.md'))).toBe(true);
+
+        // Verify React source files exist
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/popup.html'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/Popup.tsx'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/index.tsx'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/content/Content.tsx'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/content/index.tsx'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/background/background.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/types/chrome.d.ts'))).toBe(true);
+
+        // Verify icon files exist
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon16.png'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon48.png'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon128.png'))).toBe(true);
+
+        // Verify base template files exist
+        expect(await fs.pathExists(path.join(projectPath, 'web-ext-config.mjs'))).toBe(true);
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should generate valid package.json with React dependencies', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-react-extension';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = await fs.readJson(packageJsonPath);
+
+        // Verify package.json structure
+        expect(packageJson.name).toBe(projectName);
+        expect(packageJson.version).toBe('1.0.0');
+        expect(packageJson.type).toBe('module');
+
+        // Verify React dependencies
+        expect(packageJson.dependencies).toBeDefined();
+        expect(packageJson.dependencies.react).toBeDefined();
+        expect(packageJson.dependencies['react-dom']).toBeDefined();
+
+        // Verify React devDependencies
+        expect(packageJson.devDependencies).toBeDefined();
+        expect(packageJson.devDependencies['@vitejs/plugin-react']).toBeDefined();
+        expect(packageJson.devDependencies['@types/react']).toBeDefined();
+        expect(packageJson.devDependencies['@types/react-dom']).toBeDefined();
+        expect(packageJson.devDependencies.typescript).toBeDefined();
+        expect(packageJson.devDependencies.vite).toBeDefined();
+        expect(packageJson.devDependencies['@crxjs/vite-plugin']).toBeDefined();
+        expect(packageJson.devDependencies['@types/chrome']).toBeDefined();
+
+        // Verify base template dependencies are included
+        expect(packageJson.devDependencies['web-ext']).toBeDefined();
+        expect(packageJson.devDependencies.concurrently).toBeDefined();
+
+        // Verify scripts
+        expect(packageJson.scripts).toBeDefined();
+        expect(packageJson.scripts.dev).toContain('vite');
+        expect(packageJson.scripts.dev).toContain('web-ext');
+        expect(packageJson.scripts.build).toBe('tsc && vite build');
+        expect(packageJson.scripts.preview).toBe('vite preview');
+        expect(packageJson.scripts['type-check']).toBe('tsc --noEmit');
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should generate valid manifest.json for React', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-react-extension';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const manifestPath = path.join(projectPath, 'manifest.json');
+        const manifest = await fs.readJson(manifestPath);
+
+        // Verify manifest structure
+        expect(manifest.manifest_version).toBe(3);
+        expect(manifest.name).toBe(projectName);
+        expect(manifest.version).toBe('1.0.0');
+
+        // Verify action configuration points to React popup
+        expect(manifest.action).toBeDefined();
+        expect(manifest.action.default_popup).toBe('src/popup/popup.html');
+
+        // Verify background service worker
+        expect(manifest.background).toBeDefined();
+        expect(manifest.background.service_worker).toBe('src/background/background.ts');
+        expect(manifest.background.type).toBe('module');
+
+        // Verify content scripts point to React entry
+        expect(manifest.content_scripts).toBeDefined();
+        expect(Array.isArray(manifest.content_scripts)).toBe(true);
+        expect(manifest.content_scripts[0].js).toContain('src/content/index.tsx');
+
+        // Verify permissions
+        expect(manifest.permissions).toBeDefined();
+        expect(manifest.permissions).toContain('storage');
+        expect(manifest.permissions).toContain('tabs');
+
+        // Verify web_accessible_resources for content script
+        expect(manifest.web_accessible_resources).toBeDefined();
+        expect(Array.isArray(manifest.web_accessible_resources)).toBe(true);
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should merge React template with base template correctly', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'react-inheritance-test';
+        
+        const result = await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        expect(result.success).toBe(true);
+
+        const projectPath = path.join(testDir, projectName);
+
+        // Verify .gitignore includes both React and base patterns
+        const gitignorePath = path.join(projectPath, '.gitignore');
+        const gitignore = await fs.readFile(gitignorePath, 'utf-8');
+        
+        // React-specific patterns
+        expect(gitignore).toContain('node_modules/');
+        expect(gitignore).toContain('dist/');
+        expect(gitignore).toContain('*.tsbuildinfo');
+        
+        // Base template partial is currently empty, so no additional patterns expected
+        // Just verify the file is valid and doesn't have duplicate content
+
+        // Verify README includes both React and base content
+        const readmePath = path.join(projectPath, 'README.md');
+        const readme = await fs.readFile(readmePath, 'utf-8');
+        
+        // React-specific content
+        expect(readme).toContain('React');
+        expect(readme).toContain('TypeScript');
+        expect(readme).toContain('type-check');
+        
+        // Base template content
+        expect(readme).toContain('npm run dev');
+        expect(readme).toContain('Launch Chrome with your extension loaded');
+        expect(readme).toContain('Troubleshooting');
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should merge .gitignore correctly with base partial template', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'react-gitignore-test';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const gitignorePath = path.join(projectPath, '.gitignore');
+        
+        // Requirement 7.1, 7.4: Verify .gitignore merging
+        expect(await fs.pathExists(gitignorePath)).toBe(true);
+        
+        const gitignore = await fs.readFile(gitignorePath, 'utf-8');
+        
+        // Requirement 7.4: Verify React-specific entries are included
+        expect(gitignore).toContain('node_modules/');
+        expect(gitignore).toContain('dist/');
+        expect(gitignore).toContain('*.tsbuildinfo');
+        expect(gitignore).toContain('.DS_Store');
+        expect(gitignore).toContain('Thumbs.db');
+        expect(gitignore).toContain('.vscode/');
+        expect(gitignore).toContain('.idea/');
+        expect(gitignore).toContain('*.log');
+        expect(gitignore).toContain('.env');
+        
+        // Requirement 7.1: Verify base partial content is merged
+        // Note: Base partial is currently empty, but merging should still work
+        // Verify no duplicate entries or malformed content
+        const lines = gitignore.split('\n');
+        const nonEmptyLines = lines.filter(line => line.trim() !== '');
+        const uniqueLines = new Set(nonEmptyLines);
+        
+        // Should not have duplicate lines
+        expect(nonEmptyLines.length).toBe(uniqueLines.size);
+        
+        // Requirement 7.1: Verify proper spacing between template and partial content
+        // Even with empty partial, file should be well-formatted
+        expect(gitignore.trim()).toBeTruthy();
+        expect(gitignore).not.toContain('\n\n\n\n'); // No excessive blank lines
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should merge README correctly with base partial template', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'react-readme-test';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const readmePath = path.join(projectPath, 'README.md');
+        
+        // Requirement 7.2, 7.5, 10.5: Verify README merging
+        expect(await fs.pathExists(readmePath)).toBe(true);
+        
+        const readme = await fs.readFile(readmePath, 'utf-8');
+        
+        // Requirement 7.5: Verify React-specific content is included
+        expect(readme).toContain('# ' + projectName);
+        expect(readme).toContain('React 18');
+        expect(readme).toContain('TypeScript');
+        expect(readme).toContain('Vite');
+        expect(readme).toContain('Manifest V3');
+        
+        // Verify React-specific features section
+        expect(readme).toContain('## Features');
+        expect(readme).toContain('⚛️ React 18');
+        expect(readme).toContain('📘 TypeScript');
+        expect(readme).toContain('⚡ Vite-powered build system');
+        expect(readme).toContain('🔧 Modern development workflow with Browser Preview');
+        
+        // Verify React-specific project structure
+        expect(readme).toContain('## Project Structure');
+        expect(readme).toContain('Popup.tsx');
+        expect(readme).toContain('Content.tsx');
+        expect(readme).toContain('background.ts');
+        expect(readme).toContain('chrome.d.ts');
+        expect(readme).toContain('tsconfig.json');
+        expect(readme).toContain('vite.config.ts');
+        
+        // Verify React-specific scripts documentation
+        expect(readme).toContain('npm run type-check');
+        expect(readme).toContain('npm run build');
+        expect(readme).toContain('npm run preview');
+        
+        // Verify React-specific development guide
+        expect(readme).toContain('## Development Guide');
+        expect(readme).toContain('Adding a New Popup Page');
+        expect(readme).toContain('Adding a Content Script');
+        expect(readme).toContain('Using Chrome APIs');
+        
+        // Requirement 7.2, 10.5: Verify dev workflow documentation from base partial is appended
+        expect(readme).toContain('## Development');
+        expect(readme).toContain('Start the development server with hot module replacement');
+        expect(readme).toContain('npm run dev');
+        expect(readme).toContain('Start Vite dev server with HMR');
+        expect(readme).toContain('Build your extension to `dist/`');
+        expect(readme).toContain('Launch Chrome with your extension loaded');
+        expect(readme).toContain('Open DevTools automatically');
+        expect(readme).toContain('Your changes will automatically reload in the browser!');
+        
+        // Verify base partial configuration section
+        expect(readme).toContain('### Configuration');
+        expect(readme).toContain('web-ext-config.mjs');
+        expect(readme).toContain('Change browser target');
+        expect(readme).toContain('chromium, firefox, edge');
+        
+        // Verify base partial troubleshooting section
+        expect(readme).toContain('## Troubleshooting');
+        expect(readme).toContain('Browser doesn\'t open');
+        expect(readme).toContain('Extension doesn\'t load');
+        expect(readme).toContain('Port already in use');
+        
+        // Requirement 7.5, 10.5: Verify proper formatting and spacing
+        // Check that there's proper spacing between sections
+        const sections = readme.split('##').filter(s => s.trim());
+        expect(sections.length).toBeGreaterThan(5); // Multiple sections
+        
+        // Verify no excessive blank lines (more than 2 consecutive)
+        expect(readme).not.toContain('\n\n\n\n');
+        
+        // Verify the base partial content comes after React-specific content
+        const reactContentIndex = readme.indexOf('## Getting Started');
+        const basePartialIndex = readme.indexOf('## Development');
+        expect(basePartialIndex).toBeGreaterThan(reactContentIndex);
+        
+        // Verify proper spacing between React content and base partial
+        const beforeBasePartial = readme.substring(0, basePartialIndex);
+        const afterReactContent = beforeBasePartial.substring(beforeBasePartial.lastIndexOf('\n\n') + 2);
+        // Should have clean transition (no excessive whitespace)
+        expect(afterReactContent.trim()).toBeTruthy();
+        
+        // Verify both Development sections exist (Development Guide from React, Development from base)
+        expect(readme).toContain('## Development Guide');
+        expect(readme).toContain('## Development');
+        
+        // Verify they are different sections
+        const developmentGuideIndex = readme.indexOf('## Development Guide');
+        const developmentIndex = readme.indexOf('## Development');
+        expect(developmentGuideIndex).not.toBe(developmentIndex);
+        
+        // Development from base should come before Development Guide from React
+        expect(developmentIndex).toBeLessThan(developmentGuideIndex);
+        
+        // Verify the placeholder was replaced
+        expect(readme).not.toContain('DEV_WORKFLOW_PARTIAL_PLACEHOLDER');
+        expect(readme).not.toContain('<!-- DEV_WORKFLOW_PARTIAL_PLACEHOLDER -->');
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should inherit web-ext-config.mjs from base template without modification', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'react-webext-config-test';
+        
+        await createCommand(projectName, {
+          template: 'react',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        
+        // Requirement 1.3, 8.1: Verify web-ext-config.mjs is copied from base template
+        const webExtConfigPath = path.join(projectPath, 'web-ext-config.mjs');
+        expect(await fs.pathExists(webExtConfigPath)).toBe(true);
+        
+        const webExtConfig = await fs.readFile(webExtConfigPath, 'utf-8');
+        
+        // Verify the file contains expected configuration
+        expect(webExtConfig).toContain('export default');
+        expect(webExtConfig).toContain('sourceDir');
+        expect(webExtConfig).toContain('./dist');
+        expect(webExtConfig).toContain('ignoreFiles');
+        expect(webExtConfig).toContain('run');
+        expect(webExtConfig).toContain('startUrl');
+        expect(webExtConfig).toContain('chrome://extensions');
+        
+        // Verify it contains documentation comments
+        expect(webExtConfig).toContain('web-ext configuration');
+        expect(webExtConfig).toContain('Chrome extension development');
+        
+        // Verify it ignores appropriate files
+        expect(webExtConfig).toContain('web-ext-config.mjs');
+        expect(webExtConfig).toContain('vite.config.js');
+        expect(webExtConfig).toContain('package.json');
+        expect(webExtConfig).toContain('tsconfig.json');
+        expect(webExtConfig).toContain('node_modules/**');
+        expect(webExtConfig).toContain('src/**');
+        expect(webExtConfig).toContain('.git/**');
+        
+        // Requirement 8.1: Verify file works without modification for React template
+        // The configuration should be framework-agnostic and work for React
+        
+        // Verify sourceDir points to dist (where Vite builds)
+        expect(webExtConfig).toMatch(/sourceDir:\s*['"]\.\/dist['"]/);
+        
+        // Verify it's a valid ES module export
+        expect(webExtConfig).toMatch(/export\s+default\s+\{/);
+        
+        // Verify verbose is set to false (clean output)
+        expect(webExtConfig).toContain('verbose: false');
+        
+        // Compare with base template to ensure it's identical
+        const baseWebExtConfigPath = path.join(
+          process.cwd(),
+          'src/templates/base/files/web-ext-config.mjs'
+        );
+        const baseWebExtConfig = await fs.readFile(baseWebExtConfigPath, 'utf-8');
+        
+        // The generated file should be identical to the base template
+        expect(webExtConfig).toBe(baseWebExtConfig);
+        
+        // Verify the dev script in package.json references this config file
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = await fs.readJson(packageJsonPath);
+        expect(packageJson.scripts.dev).toContain('--config=./web-ext-config.mjs');
+        
+        // Verify the config is compatible with React's build output
+        // React uses Vite which outputs to dist/, matching the sourceDir
+        const viteConfigPath = path.join(projectPath, 'vite.config.ts');
+        const viteConfig = await fs.readFile(viteConfigPath, 'utf-8');
+        expect(viteConfig).toContain("outDir: 'dist'");
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+  });
 });

@@ -22,10 +22,11 @@ The template inheritance system enables templates to extend a base template, inh
          ▼                                   ▼
 ┌────────────────────────┐         ┌────────────────────────┐
 │   Vanilla Template     │         │   React Template       │
-│   - vite.config.js     │         │   - vite.config.js     │
-│   - Vanilla deps       │         │   - React deps         │
-│   - Basic structure    │         │   - React structure    │
-└────────────────────────┘         └────────────────────────┘
+│   - vite.config.js     │         │   - vite.config.ts     │
+│   - Vanilla deps       │         │   - React 18 + TS      │
+│   - Basic structure    │         │   - React components   │
+└────────────────────────┘         │   - Testing setup      │
+                                    └────────────────────────┘
 ```
 
 ## Base Template Structure
@@ -462,24 +463,25 @@ mergePartialFiles(templateContent: string, partialContent: string): string {
 - Build and preview scripts
 - Vanilla-specific file structure
 
-### Example 2: React Template (Future)
+### Example 2: React Template
 
 ```json
 {
   "id": "react",
   "name": "React",
-  "description": "Chrome extension with React and TypeScript",
+  "description": "Chrome extension with React 18 and TypeScript",
   "extends": "base",
   "dependencies": [
-    "react@^18.2.0",
-    "react-dom@^18.2.0"
+    "react@^18.3.0",
+    "react-dom@^18.3.0"
   ],
   "devDependencies": [
     "@crxjs/vite-plugin@^2.2.1",
-    "@types/react@^18.2.0",
-    "@types/react-dom@^18.2.0",
-    "@vitejs/plugin-react@^4.0.0",
-    "typescript@^5.0.0",
+    "@types/chrome@^0.0.270",
+    "@types/react@^18.3.0",
+    "@types/react-dom@^18.3.0",
+    "@vitejs/plugin-react@^4.3.0",
+    "typescript@^5.6.0",
     "vite@^7.2.2"
   ],
   "scripts": {
@@ -493,13 +495,127 @@ mergePartialFiles(templateContent: string, partialContent: string): string {
 **Inherits from base:**
 - Browser Preview features (same as vanilla)
 - `dev` script with auto-launch
-- Profile persistence
+- `web-ext` and `concurrently` dependencies
+- Dev workflow documentation
 
 **Adds:**
-- React and React DOM
-- TypeScript support
+- React 18 and React DOM
+- TypeScript with strict mode
 - React-specific Vite plugin
+- Chrome API type definitions
 - Type checking script
+- React component structure (popup, content script)
+
+**Project Structure:**
+```
+my-react-extension/
+├── src/
+│   ├── popup/
+│   │   ├── Popup.tsx           # React popup component
+│   │   ├── popup.html          # HTML entry point
+│   │   └── index.tsx           # React render entry
+│   ├── content/
+│   │   ├── Content.tsx         # React content script
+│   │   └── index.tsx           # Content script entry
+│   ├── background/
+│   │   └── background.ts       # Service worker
+│   ├── components/
+│   │   └── ErrorBoundary.tsx   # Error boundary component
+│   └── types/
+│       └── chrome.d.ts         # Chrome API type augmentations
+├── public/
+│   └── icons/                  # Extension icons
+├── manifest.json               # Manifest V3 with React entry points
+├── vite.config.ts              # Vite + React + CRX plugins
+├── tsconfig.json               # TypeScript config for React
+├── vitest.config.ts            # Testing configuration
+└── web-ext-config.mjs          # Inherited from base
+```
+
+### React Template Details
+
+The React template demonstrates the full power of template inheritance:
+
+**File Merging in Action:**
+
+1. **package.json merging:**
+   - Base provides: `dev` script, `web-ext`, `concurrently`
+   - React adds: `build`, `preview`, `type-check` scripts, React deps, TypeScript
+   - Result: Complete package.json with all scripts and dependencies
+
+2. **.gitignore merging:**
+   - React template: `node_modules/`, `dist/`, `.vscode/`, `*.log`, `*.tsbuildinfo`
+   - Base partial: `.dev-profile/` (Browser Preview profile)
+   - Result: Complete .gitignore with both sets of patterns
+
+3. **README merging:**
+   - React template: Project overview, React features, TypeScript usage
+   - Base partial: Development workflow with `npm run dev` instructions
+   - Result: Complete README with React docs + Browser Preview workflow
+
+**React-Specific Features:**
+
+- **Modern JSX Transform**: `jsx: "react-jsx"` in tsconfig.json - no React imports needed
+- **Strict TypeScript**: Full type safety for React components and Chrome APIs
+- **Component Structure**: Popup and content scripts as React components
+- **Error Boundaries**: Built-in error handling for production reliability
+- **Testing Ready**: Vitest + React Testing Library pre-configured
+- **HMR Support**: Hot module replacement for instant feedback during development
+
+**Chrome Extension Integration:**
+
+The React template shows how to integrate React with Chrome extension APIs:
+
+```tsx
+// Example: Popup component with Chrome storage
+import { useState, useEffect } from 'react';
+
+export function Popup() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    chrome.storage.local.get(['count'], (result) => {
+      if (result.count) setCount(result.count);
+    });
+  }, []);
+
+  const handleIncrement = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    chrome.storage.local.set({ count: newCount });
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={handleIncrement}>Increment</button>
+    </div>
+  );
+}
+```
+
+**Development Experience:**
+
+```bash
+# Create React extension
+extn create my-react-extension --template react
+
+# Install dependencies
+cd my-react-extension
+npm install
+
+# Start development (inherited from base)
+npm run dev
+# ✨ Vite builds with React HMR
+# 🚀 Chrome launches with extension loaded
+# 🔄 Changes update instantly
+
+# Type check (React-specific)
+npm run type-check
+
+# Build for production (React-specific)
+npm run build
+```
 
 ### Example 3: Vue Template (Future)
 
@@ -535,6 +651,213 @@ mergePartialFiles(templateContent: string, partialContent: string): string {
 - Vue 3 framework
 - Vue-specific Vite plugin
 - Vue TypeScript compiler
+
+## Using the React Template
+
+### Getting Started
+
+Create a new React-based Chrome extension:
+
+```bash
+extn create my-react-extension --template react
+cd my-react-extension
+npm install
+npm run dev
+```
+
+### React Template Structure
+
+The React template provides a complete React development environment:
+
+**Configuration Files:**
+- `tsconfig.json` - TypeScript config with React JSX transform
+- `vite.config.ts` - Vite with React and CRX plugins
+- `vitest.config.ts` - Testing configuration
+- `manifest.json` - Manifest V3 with TypeScript entry points
+- `web-ext-config.mjs` - Inherited from base template
+
+**Source Structure:**
+- `src/popup/` - React popup component with Chrome storage example
+- `src/content/` - React content script component
+- `src/background/` - Background service worker (TypeScript)
+- `src/components/` - Shared React components (ErrorBoundary)
+- `src/types/` - Chrome API type augmentations
+
+### Adding New Components
+
+**Add a new popup page:**
+
+1. Create component: `src/options/Options.tsx`
+2. Create entry: `src/options/index.tsx`
+3. Create HTML: `src/options/options.html`
+4. Update manifest: Add to `chrome_url_overrides` or `options_page`
+
+**Add a new content script:**
+
+1. Create component: `src/content/MyContent.tsx`
+2. Create entry: `src/content/my-content.tsx`
+3. Update manifest: Add to `content_scripts` array
+
+### React + Chrome APIs
+
+**Using Chrome Storage:**
+
+```tsx
+import { useState, useEffect } from 'react';
+
+function MyComponent() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    chrome.storage.local.get(['key'], (result) => {
+      setData(result.key);
+    });
+  }, []);
+
+  const saveData = (value: any) => {
+    chrome.storage.local.set({ key: value });
+    setData(value);
+  };
+
+  return <div>{/* Your UI */}</div>;
+}
+```
+
+**Using Chrome Messaging:**
+
+```tsx
+import { useEffect } from 'react';
+
+function MyComponent() {
+  useEffect(() => {
+    const listener = (message: any, sender: any, sendResponse: any) => {
+      console.log('Message received:', message);
+      sendResponse({ status: 'ok' });
+    };
+
+    chrome.runtime.onMessage.addListener(listener);
+    return () => chrome.runtime.onMessage.removeListener(listener);
+  }, []);
+
+  const sendMessage = () => {
+    chrome.runtime.sendMessage({ type: 'HELLO' });
+  };
+
+  return <button onClick={sendMessage}>Send Message</button>;
+}
+```
+
+### Testing React Components
+
+The React template includes Vitest and React Testing Library:
+
+```bash
+# Run tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**Example test:**
+
+```tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Popup } from '../Popup';
+
+// Mock Chrome API
+global.chrome = {
+  storage: {
+    local: {
+      get: vi.fn(),
+      set: vi.fn(),
+    },
+  },
+} as any;
+
+describe('Popup', () => {
+  it('renders correctly', () => {
+    render(<Popup />);
+    expect(screen.getByText(/my-react-extension/i)).toBeInTheDocument();
+  });
+
+  it('increments count', () => {
+    render(<Popup />);
+    const button = screen.getByText('Increment');
+    fireEvent.click(button);
+    expect(chrome.storage.local.set).toHaveBeenCalled();
+  });
+});
+```
+
+### TypeScript Tips
+
+**Chrome API Types:**
+
+The template includes type augmentations in `src/types/chrome.d.ts`:
+
+```typescript
+// Extend Chrome API types
+declare namespace chrome.storage {
+  interface StorageArea {
+    get(keys: string[]): Promise<{ [key: string]: any }>;
+    set(items: { [key: string]: any }): Promise<void>;
+  }
+}
+```
+
+**Component Props:**
+
+```tsx
+interface PopupProps {
+  initialCount?: number;
+  onCountChange?: (count: number) => void;
+}
+
+export function Popup({ initialCount = 0, onCountChange }: PopupProps) {
+  // Component implementation
+}
+```
+
+### Performance Optimization
+
+**Code Splitting:**
+
+```tsx
+import { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function MyComponent() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+```
+
+**Memoization:**
+
+```tsx
+import { useMemo, useCallback } from 'react';
+
+function MyComponent({ data }: { data: any[] }) {
+  const processedData = useMemo(() => {
+    return data.map(item => /* expensive operation */);
+  }, [data]);
+
+  const handleClick = useCallback(() => {
+    // Handle click
+  }, []);
+
+  return <div>{/* UI */}</div>;
+}
+```
 
 ## Best Practices
 

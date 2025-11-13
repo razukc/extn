@@ -17,6 +17,14 @@ describe('TemplateRegistry', () => {
       expect(template?.name).toBe('Vanilla JavaScript');
     });
 
+    it('should return react template', () => {
+      const template = registry.get('react');
+
+      expect(template).toBeDefined();
+      expect(template?.id).toBe('react');
+      expect(template?.name).toBe('React');
+    });
+
     it('should return undefined for non-existent template', () => {
       const template = registry.get('non-existent');
 
@@ -39,11 +47,23 @@ describe('TemplateRegistry', () => {
       expect(vanillaTemplate).toBeDefined();
       expect(vanillaTemplate?.name).toBe('Vanilla JavaScript');
     });
+
+    it('should include react template in list', () => {
+      const templates = registry.list();
+      const reactTemplate = templates.find(t => t.id === 'react');
+
+      expect(reactTemplate).toBeDefined();
+      expect(reactTemplate?.name).toBe('React');
+    });
   });
 
   describe('has', () => {
     it('should return true for existing template', () => {
       expect(registry.has('vanilla')).toBe(true);
+    });
+
+    it('should return true for react template', () => {
+      expect(registry.has('react')).toBe(true);
     });
 
     it('should return false for non-existent template', () => {
@@ -414,6 +434,120 @@ describe('TemplateRegistry', () => {
       expect(webExtIndex).toBeGreaterThanOrEqual(0);
       expect(viteIndex).toBeGreaterThanOrEqual(0);
       expect(webExtIndex).toBeLessThan(viteIndex);
+    });
+  });
+
+  describe('React template registration', () => {
+    it('should load react template correctly', () => {
+      const reactTemplate = registry.get('react');
+
+      expect(reactTemplate).toBeDefined();
+      expect(reactTemplate?.id).toBe('react');
+      expect(reactTemplate?.name).toBe('React');
+      expect(reactTemplate?.description).toContain('React 18');
+    });
+
+    it('should load react template with extends field', () => {
+      const reactTemplate = registry.get('react');
+
+      expect(reactTemplate).toBeDefined();
+      expect(reactTemplate?.extends).toBe('base');
+    });
+
+    it('should load react template with correct dependencies', () => {
+      const reactTemplate = registry.get('react');
+
+      expect(reactTemplate?.dependencies).toBeDefined();
+      expect(Array.isArray(reactTemplate?.dependencies)).toBe(true);
+      expect(reactTemplate?.dependencies).toContain('react@^18.3.0');
+      expect(reactTemplate?.dependencies).toContain('react-dom@^18.3.0');
+    });
+
+    it('should load react template with correct devDependencies', () => {
+      const reactTemplate = registry.get('react');
+
+      expect(reactTemplate?.devDependencies).toBeDefined();
+      expect(Array.isArray(reactTemplate?.devDependencies)).toBe(true);
+      expect(reactTemplate?.devDependencies).toContain('@crxjs/vite-plugin@^2.2.1');
+      expect(reactTemplate?.devDependencies).toContain('@types/chrome@^0.0.270');
+      expect(reactTemplate?.devDependencies).toContain('@types/react@^18.3.0');
+      expect(reactTemplate?.devDependencies).toContain('@types/react-dom@^18.3.0');
+      expect(reactTemplate?.devDependencies).toContain('@vitejs/plugin-react@^4.3.0');
+      expect(reactTemplate?.devDependencies).toContain('typescript@^5.6.0');
+      expect(reactTemplate?.devDependencies).toContain('vite@^7.2.2');
+    });
+
+    it('should load react template with correct scripts', () => {
+      const reactTemplate = registry.get('react');
+
+      expect(reactTemplate?.scripts).toBeDefined();
+      expect(reactTemplate?.scripts?.build).toBe('tsc && vite build');
+      expect(reactTemplate?.scripts?.preview).toBe('vite preview');
+      expect(reactTemplate?.scripts?.['type-check']).toBe('tsc --noEmit');
+    });
+
+    it('should merge react template with base template', () => {
+      const mergedTemplate = registry.getWithBase('react');
+
+      expect(mergedTemplate).toBeDefined();
+      expect(mergedTemplate?.id).toBe('react');
+      expect(mergedTemplate?.extends).toBe('base');
+    });
+
+    it('should merge devDependencies from base and react', () => {
+      const mergedTemplate = registry.getWithBase('react');
+
+      expect(mergedTemplate?.devDependencies).toBeDefined();
+      // Base dependencies
+      expect(mergedTemplate?.devDependencies).toContain('web-ext@^8.3.0');
+      expect(mergedTemplate?.devDependencies).toContain('concurrently@^9.1.0');
+      // React dependencies
+      expect(mergedTemplate?.devDependencies).toContain('@crxjs/vite-plugin@^2.2.1');
+      expect(mergedTemplate?.devDependencies).toContain('@vitejs/plugin-react@^4.3.0');
+      expect(mergedTemplate?.devDependencies).toContain('typescript@^5.6.0');
+      expect(mergedTemplate?.devDependencies).toContain('vite@^7.2.2');
+    });
+
+    it('should merge dependencies from base and react', () => {
+      const mergedTemplate = registry.getWithBase('react');
+
+      expect(mergedTemplate?.dependencies).toBeDefined();
+      expect(Array.isArray(mergedTemplate?.dependencies)).toBe(true);
+      // React dependencies
+      expect(mergedTemplate?.dependencies).toContain('react@^18.3.0');
+      expect(mergedTemplate?.dependencies).toContain('react-dom@^18.3.0');
+    });
+
+    it('should merge scripts from base and react', () => {
+      const mergedTemplate = registry.getWithBase('react');
+
+      expect(mergedTemplate?.scripts).toBeDefined();
+      // Should have dev script from base
+      expect(mergedTemplate?.scripts?.dev).toBeDefined();
+      expect(mergedTemplate?.scripts?.dev).toContain('concurrently');
+      // Should have build, preview, and type-check scripts from react
+      expect(mergedTemplate?.scripts?.build).toBe('tsc && vite build');
+      expect(mergedTemplate?.scripts?.preview).toBe('vite preview');
+      expect(mergedTemplate?.scripts?.['type-check']).toBe('tsc --noEmit');
+    });
+
+    it('should have all scripts after merging react template', () => {
+      const mergedTemplate = registry.getWithBase('react');
+
+      expect(mergedTemplate?.scripts).toBeDefined();
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('dev');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('build');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('preview');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('type-check');
+    });
+
+    it('should appear in available templates list', () => {
+      const templates = registry.list();
+      const reactTemplate = templates.find(t => t.id === 'react');
+
+      expect(reactTemplate).toBeDefined();
+      expect(reactTemplate?.name).toBe('React');
+      expect(reactTemplate?.description).toContain('React 18');
     });
   });
 });

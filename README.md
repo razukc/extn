@@ -10,7 +10,7 @@ A TypeScript-based CLI for building Chrome Manifest V3 extensions with modern to
 - 🌐 **Browser Preview** - Auto-launch Chrome with your extension loaded
 - 🔄 **Hot Module Replacement** - See changes instantly without manual reload
 - ✅ TypeScript-first development experience
-- 🎨 Vanilla JavaScript template (React, Vue, Svelte coming soon)
+- 🎨 Multiple templates: Vanilla JavaScript and React (Vue, Svelte coming soon)
 - 🔍 Comprehensive manifest validation with helpful error messages
 - 🌐 Cross-platform support (Windows, macOS, Linux)
 
@@ -82,19 +82,23 @@ extn create my-extension --directory ./projects
 
 - `-t, --template <name>` - Template to use (default: `vanilla`)
   - `vanilla` - Plain JavaScript/TypeScript template
+  - `react` - React 18 with TypeScript and modern tooling
 - `-d, --directory <path>` - Target directory (default: `./<project-name>`)
 
 **Examples:**
 
 ```bash
-# Create with default settings
+# Create with default settings (vanilla template)
 extn create my-extension
+
+# Create with React template
+extn create my-extension --template react
 
 # Create in a specific directory
 extn create my-extension --directory ~/projects
 
-# Use a specific template (currently only vanilla available)
-extn create my-extension --template vanilla
+# Combine options
+extn create my-react-extension --template react --directory ~/projects
 ```
 
 **What gets created:**
@@ -145,6 +149,18 @@ Projects created with extn include:
 - **TypeScript Support** - Full TypeScript configuration (optional to use)
 - **Example Code** - Working popup, background service worker, and content script
 - **Icons** - Placeholder icons in required sizes (16x16, 48x48, 128x128)
+
+### React Template Features
+
+When using the React template (`--template react`), you also get:
+
+- **React 18** - Latest React with modern hooks and concurrent features
+- **TypeScript** - Strict type checking for React components and Chrome APIs
+- **Modern JSX Transform** - No need to import React in every file
+- **React Components** - Example popup and content script as React components
+- **Error Boundaries** - Built-in error handling for React components
+- **Testing Setup** - Vitest with React Testing Library pre-configured
+- **Type Definitions** - Full type support for Chrome extension APIs
 
 ## Development Workflow
 
@@ -209,18 +225,20 @@ Base Template (Browser Preview)
 
 ↓ Extended by ↓
 
-Vanilla Template
-├── Vite configuration
-├── Basic extension structure
-└── Vanilla JavaScript setup
+Vanilla Template              React Template
+├── Vite configuration       ├── Vite + React configuration
+├── Basic extension          ├── React 18 + TypeScript
+└── Vanilla JavaScript       ├── Modern JSX transform
+                             └── React component structure
 
-(React, Vue, Svelte templates coming soon - all will include Browser Preview)
+(Vue, Svelte templates coming soon - all will include Browser Preview)
 ```
 
 **What this means for you:**
 - 🎯 Every template type gets Browser Preview automatically
 - 🔧 Framework-specific features stay separate from dev workflow
 - 📦 Consistent development experience across all templates
+- ⚛️ Choose your preferred framework (Vanilla or React)
 - 🚀 Future templates will inherit Browser Preview features
 
 ## Troubleshooting

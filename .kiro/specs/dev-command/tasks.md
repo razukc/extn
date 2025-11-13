@@ -16,15 +16,12 @@
     - Define dev script pattern in scripts section
     - _Requirements: 1.1, 8.5_
 
-  - [x] 1.2 Create web-ext-config.js in base template
-    - Create new file at `src/templates/base/files/web-ext-config.js`
+  - [x] 1.2 Create web-ext-config.mjs in base template
+    - Create new file at `src/templates/base/files/web-ext-config.mjs`
     - Configure sourceDir to point to ./dist
-    - Set target to 'chromium' for Chrome support
-    - Configure chromiumProfile to use ./.dev-profile/chrome
-    - Enable keepProfileChanges for profile persistence
-    - Set startUrl to chrome://extensions
-    - Add --auto-open-devtools-for-tabs to args
+    - Set startUrl to chrome://extensions in run section
     - Configure ignoreFiles to exclude build config files
+    - Use web-ext default temporary profile behavior
     - _Requirements: 1.2, 2.1, 2.2, 4.1, 5.1, 5.2, 5.3_
 
   - [x] 1.3 Write unit test for web-ext-config.js validity
@@ -37,17 +34,16 @@
 
 
     - Create `src/templates/base/files/.gitignore.partial.template`
-    - Add .dev-profile/ entry
-    - Add comment explaining Browser Preview feature
+    - Leave empty (reserved for future shared patterns)
     - _Requirements: 2.3, 7.3_
 
   - [x] 1.5 Create partial README in base template
 
 
-    - Create `src/templates/base/files/README.dev-workflow.partial.md`
+    - Create `src/templates/base/files/README.partial.md.template`
     - Document npm run dev command
-    - Explain dev workflow steps
-    - Add configuration section for web-ext-config.js
+    - Explain dev workflow steps (without profile persistence)
+    - Add configuration section for web-ext-config.mjs
     - Add troubleshooting section
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 9.1, 9.2, 9.3, 9.4, 11.1, 11.2, 11.3, 11.4, 11.5_
 
@@ -151,8 +147,7 @@
 
 
     - Keep existing vanilla-specific ignore patterns
-    - Remove .dev-profile/ (now in base partial)
-    - Note: Will be merged with base partial at generation time
+    - Note: Will be merged with base partial at generation time (if base partial has content)
     - _Requirements: 2.3, 7.3_
 
   - [x] 3.5 Update vanilla README.md.template
@@ -229,10 +224,9 @@
 
 
     - Test extn create generates project with base + vanilla files
-    - Verify web-ext-config.js is present (from base)
+    - Verify web-ext-config.mjs is present (from base)
     - Verify package.json has merged dependencies (base + vanilla)
     - Verify package.json has merged scripts (base + vanilla)
-    - Verify .gitignore includes .dev-profile/ (from base partial)
     - Verify README includes dev workflow documentation (from base partial)
     - _Requirements: 1.1, 8.5_
 
@@ -328,7 +322,6 @@
     - Test behavior when port is in use
     - Test behavior with invalid manifest
     - Verify error messages are helpful
-    - Test profile cleanup (delete .dev-profile/)
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
 
 - [x] 7. Update documentation

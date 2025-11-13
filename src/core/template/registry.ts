@@ -54,6 +54,18 @@ export class TemplateRegistry {
         files: vanillaFilesPath,
       });
     }
+
+    // Load react template
+    const reactMetaPath = path.join(templatesDir, 'react', 'template.json');
+    const reactFilesPath = path.join(templatesDir, 'react', 'files');
+
+    if (fs.existsSync(reactMetaPath)) {
+      const metadata = fs.readJsonSync(reactMetaPath);
+      this.templates.set('react', {
+        ...metadata,
+        files: reactFilesPath,
+      });
+    }
   }
 
   /**

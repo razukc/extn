@@ -22,10 +22,9 @@ This approach keeps the extn CLI simple (just scaffolding) while giving generate
 ┌─────────────────────────────────────────────────────────────┐
 │                    Base Template                             │
 │  (Shared Browser Preview Features)                           │
-│  - web-ext-config.js                                         │
+│  - web-ext-config.mjs                                        │
 │  - dev script pattern                                        │
 │  - web-ext + concurrently dependencies                       │
-│  - .dev-profile/ in .gitignore                               │
 │  - Dev workflow documentation                                │
 └────────┬──────────────────────────────────┬────────────────┘
          │                                   │
@@ -64,8 +63,8 @@ This approach keeps the extn CLI simple (just scaffolding) while giving generate
                                              ▼
                                    ┌────────────────────────┐
                                    │   Browser Instance     │
-                                   │   + Dev Profile        │
-                                   │   (.dev-profile/)      │
+                                   │   + Temp Profile       │
+                                   │   (auto-managed)       │
                                    └────────────────────────┘
 ```
 
@@ -87,7 +86,7 @@ This approach keeps the extn CLI simple (just scaffolding) while giving generate
      ↓
    web-ext launches browser with extension loaded
      ↓
-   Browser uses persistent profile from .dev-profile/
+   Browser uses temporary profile (web-ext default)
    ```
 
 2. **Development Loop**
@@ -115,9 +114,9 @@ src/templates/
 ├── base/                                    # NEW: Base template
 │   ├── template.json                        # Base metadata
 │   └── files/
-│       ├── web-ext-config.js                # Browser config (shared)
-│       ├── .gitignore.partial.template      # Dev profile ignore (shared)
-│       └── README.dev-workflow.partial.md   # Dev workflow docs (shared)
+│       ├── web-ext-config.mjs               # Browser config (shared)
+│       ├── .gitignore.partial.template      # Empty (reserved for future)
+│       └── README.partial.md.template       # Dev workflow docs (shared)
 │
 └── vanilla/                                 # Existing vanilla template
     ├── template.json                        # Updated to extend base
@@ -125,7 +124,7 @@ src/templates/
         ├── manifest.json.template           # Vanilla-specific
         ├── vite.config.js.template          # Vanilla-specific
         ├── package.json.template            # Vanilla-specific (merged with base)
-        ├── .gitignore.template              # Vanilla-specific (merged with base partial)
+        ├── .gitignore.template              # Vanilla-specific
         ├── README.md.template               # Vanilla-specific (merged with base partial)
         └── src/                             # Vanilla source files
             ├── popup/
@@ -259,67 +258,63 @@ export class TemplateEngine {
 
 **Purpose:** Configure web-ext behavior for browser launching (shared across all templates)
 
-**New file: `src/templates/base/files/web-ext-config.js`:**
+**New file: `src/templates/base/files/web-ext-config.mjs`:**
 ```javascript
 export default {
   // Source directory (Vite output)
   sourceDir: './dist',
   
-  // Browser configuration
-  target: 'chromium',
-  
-  // Profile configuration
-  chromiumProfile: './.dev-profile/chrome',
-  keepProfileChanges: true,
-  
-  // Browser launch options
-  startUrl: ['chrome://extensions'],
-  args: ['--auto-open-devtools-for-tabs'],
-  
   // Ignore patterns
   ignoreFiles: [
-    'web-ext-config.js',
+    'web-ext-config.mjs',
     'vite.config.js',
     'package.json',
     'package-lock.json',
-    'node_modules',
-    'src'
+    'tsconfig.json',
+    'node_modules/**',
+    'src/**',
+    '.git/**',
   ],
   
   // Logging
-  verbose: false
+  verbose: false,
+  
+  // Run command specific options
+  run: {
+    // Open chrome://extensions page on startup
+    startUrl: ['chrome://extensions'],
+  },
 };
 ```
 
 **Responsibilities:**
 - Configure web-ext to use Vite's dist/ output
-- Set up persistent browser profile
-- Configure browser launch options (DevTools, start URL)
+- Configure browser launch options (start URL)
 - Exclude unnecessary files from extension loading
 - Shared across all template types (vanilla, React, Vue, etc.)
+- Uses temporary browser profile by default (web-ext default behavior)
 
 ### 5. Template .gitignore Updates
 
-**Purpose:** Ensure dev profile is not committed to version control (shared across all templates)
+**Purpose:** Reserved for future shared gitignore patterns
 
 **New file: `src/templates/base/files/.gitignore.partial.template`:**
 ```
-# Development profile (Browser Preview)
-.dev-profile/
+(empty file - reserved for future use)
 ```
 
-**Note:** This partial gitignore will be merged with template-specific .gitignore files. Each template (vanilla, React, Vue) maintains its own .gitignore with framework-specific patterns, and the base partial adds the Browser Preview-specific patterns.
+**Note:** This partial gitignore file is currently empty but reserved for future shared patterns. Each template (vanilla, React, Vue) maintains its own .gitignore with framework-specific patterns.
 
 **Responsibilities:**
-- Add .dev-profile/ to gitignore for all templates
-- Use partial file approach to merge with template-specific ignores
+- Reserved for future shared gitignore patterns
+- Use partial file approach to merge with template-specific ignores if needed
 - Keep Browser Preview patterns separate from framework-specific patterns
 
 ### 6. Template README Updates
 
 **Purpose:** Document the development workflow for generated projects (shared across all templates)
 
-**New file: `src/templates/base/files/README.dev-workflow.partial.md`:**
+**New file: `src/templates/base/files/README.partial.md.template`:**
 ```markdown
 ## Development
 
@@ -334,16 +329,14 @@ This will:
 2. Build your extension to `dist/`
 3. Launch Chrome with your extension loaded
 4. Open DevTools automatically
-5. Use a persistent profile in `.dev-profile/`
 
 Your changes will automatically reload in the browser!
 
 ### Configuration
 
-You can customize the development experience by editing `web-ext-config.js`:
+You can customize the development experience by editing `web-ext-config.mjs`:
 
 - Change browser target (chromium, firefox, edge)
-- Customize profile location
 - Modify browser launch options
 - Configure start URLs
 
@@ -357,7 +350,7 @@ You can customize the development experience by editing `web-ext-config.js`:
 ### Extension doesn't load
 - Check the console for build errors
 - Verify manifest.json is valid
-- Clear the `.dev-profile/` directory and try again
+- Try restarting the dev server
 ```
 
 **Note:** This partial README will be merged into template-specific README files. Each template maintains its own README with framework-specific instructions, and this partial adds the shared Browser Preview documentation.
@@ -478,31 +471,57 @@ Merged result:
 Files with `.partial` in their name are merged with template-specific files:
 
 1. **README.md**: Template README + base partial appended
-2. **.gitignore**: Template .gitignore + base partial appended
+2. **.gitignore**: Template .gitignore + base partial appended (if base partial has content)
 
 **Example:**
 
-Vanilla .gitignore:
-```
-node_modules/
-dist/
-.vscode/
+Vanilla README.md:
+```markdown
+# my-extension
+
+A Chrome extension built with Vite.
+
+## Getting Started
+
+\`\`\`bash
+npm install
+\`\`\`
 ```
 
-Base .gitignore.partial:
-```
-# Development profile (Browser Preview)
-.dev-profile/
+Base README.partial.md:
+```markdown
+## Development
+
+Start the development server:
+
+\`\`\`bash
+npm run dev
+\`\`\`
+
+This will launch Chrome with your extension loaded.
 ```
 
-Merged .gitignore:
-```
-node_modules/
-dist/
-.vscode/
+Merged README.md:
+```markdown
+# my-extension
 
-# Development profile (Browser Preview)
-.dev-profile/
+A Chrome extension built with Vite.
+
+## Getting Started
+
+\`\`\`bash
+npm install
+\`\`\`
+
+## Development
+
+Start the development server:
+
+\`\`\`bash
+npm run dev
+\`\`\`
+
+This will launch Chrome with your extension loaded.
 ```
 
 ### File Override Rules
@@ -520,16 +539,16 @@ This ensures template-specific customizations always take precedence while prese
 ### Web-ext Configuration Model
 
 ```javascript
-// web-ext-config.js in generated projects
+// web-ext-config.mjs in generated projects
 export default {
   sourceDir: string,           // Extension source directory
-  target: string,              // Browser target (chromium, firefox, edge)
-  chromiumProfile: string,     // Profile directory path
-  keepProfileChanges: boolean, // Persist profile between sessions
-  startUrl: string[],          // URLs to open on launch
-  args: string[],              // Browser CLI arguments
   ignoreFiles: string[],       // Files to exclude from extension
-  verbose: boolean             // Logging level
+  verbose: boolean,            // Logging level
+  run: {
+    startUrl: string[],        // URLs to open on launch
+    // Optional: chromiumProfile, firefoxProfile for persistent profiles
+    // Optional: args for browser CLI arguments
+  }
 };
 ```
 
@@ -571,9 +590,9 @@ Since the development workflow runs in the generated project using standard tool
    - @crxjs/vite-plugin validates manifest during build
    - Chrome DevTools shows runtime errors in console
 
-5. **Profile Errors**
-   - web-ext handles profile creation and management
-   - Users can delete `.dev-profile/` directory to reset
+5. **Browser Launch Errors**
+   - web-ext handles browser detection and launching
+   - Users can specify custom browser path in web-ext-config.mjs
    - README includes troubleshooting steps
 
 ### Error Documentation
@@ -583,7 +602,6 @@ The template README includes a troubleshooting section covering:
 - Port conflicts
 - Build failures
 - Extension loading issues
-- Profile corruption
 - Common configuration mistakes
 
 ## Testing Strategy
@@ -591,16 +609,14 @@ The template README includes a troubleshooting section covering:
 ### Unit Tests
 
 1. **Template File Tests**
-   - Verify web-ext-config.js is valid JavaScript
+   - Verify web-ext-config.mjs is valid JavaScript
    - Verify package.json.template has correct dependencies
-   - Verify .gitignore.template includes .dev-profile/
    - Verify README.template includes dev workflow documentation
 
 2. **Template Generation Tests**
    - Test that `extn create` includes all new template files
-   - Verify web-ext-config.js is copied correctly
+   - Verify web-ext-config.mjs is copied correctly
    - Verify package.json has correct scripts and dependencies
-   - Verify .gitignore includes dev profile
 
 ### Integration Tests
 
@@ -630,10 +646,9 @@ The template README includes a troubleshooting section covering:
 
 **Project Creation:**
 - [ ] Run `extn create test-project` successfully
-- [ ] Generated project includes web-ext-config.js (from base)
+- [ ] Generated project includes web-ext-config.mjs (from base)
 - [ ] Generated package.json has web-ext and concurrently (from base)
 - [ ] Generated package.json has vite and @crxjs/vite-plugin (from vanilla)
-- [ ] Generated .gitignore includes .dev-profile/ (from base partial)
 - [ ] Generated README documents dev workflow (from base partial)
 
 **Development Workflow:**
@@ -644,7 +659,6 @@ The template README includes a troubleshooting section covering:
 - [ ] DevTools open automatically
 - [ ] File changes trigger HMR
 - [ ] Manifest changes trigger full reload
-- [ ] Profile persists between sessions (in .dev-profile/)
 - [ ] Ctrl+C shuts down both processes cleanly
 
 **Cross-Platform:**
@@ -673,9 +687,8 @@ The template README includes a troubleshooting section covering:
 
 ### Phase 3: Vanilla Template Updates (Day 3)
 - Update vanilla template.json to extend base
-- Remove web-ext-config.js from vanilla (now in base)
+- Remove web-ext-config.mjs from vanilla (now in base)
 - Update vanilla README to include dev workflow section
-- Update vanilla .gitignore to include .dev-profile/
 
 ### Phase 4: Testing (Day 4)
 - Write unit tests for template inheritance
@@ -761,13 +774,16 @@ npm run build
 
 Users can customize the development experience by editing files in their generated project:
 
-**web-ext-config.js** - Browser and launch configuration:
+**web-ext-config.mjs** - Browser and launch configuration:
 ```javascript
 export default {
-  target: 'chromium',              // Change to 'firefox' or 'edge'
-  chromiumProfile: './.dev-profile/chrome',
-  startUrl: ['chrome://extensions', 'https://example.com'],
-  args: ['--auto-open-devtools-for-tabs', '--window-size=1280,720'],
+  sourceDir: './dist',
+  run: {
+    startUrl: ['chrome://extensions', 'https://example.com'],
+    // Optional: Add persistent profile
+    // chromiumProfile: './.dev-profile/chrome',
+    // keepProfileChanges: true,
+  },
   // ... other options
 };
 ```
@@ -797,9 +813,9 @@ export default {
 ## Security Considerations
 
 1. **Profile Isolation**
-   - Dev profiles are separate from user's main profile
+   - Temporary profiles are separate from user's main profile
    - No access to user's personal data
-   - Profile directory is in project folder (gitignored)
+   - Profiles are automatically cleaned up by web-ext
 
 2. **Extension Permissions**
    - Extension runs with declared permissions only
@@ -823,10 +839,10 @@ export default {
    - @crxjs handles extension-specific updates
    - Minimal overhead from our code
 
-3. **Profile Size**
-   - Monitor profile directory size
-   - Warn if profile exceeds 500MB
-   - Provide cleanup command
+3. **Resource Management**
+   - Temporary profiles are automatically cleaned up
+   - No manual cleanup required
+   - Minimal disk space usage
 
 ## Benefits of Template Inheritance Architecture
 
@@ -868,9 +884,9 @@ export default {
    - Provide configuration presets in base
 
 4. **Development Tools (Base Template)**
-   - Add script to clean dev profile
-   - Add script to inspect profile size
    - Add debugging helpers
+   - Add extension reload utilities
+   - Add build verification scripts
 
 5. **Enhanced Inheritance**
    - Support multiple inheritance levels (base → framework → variant)
