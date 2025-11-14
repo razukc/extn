@@ -10,7 +10,7 @@ A TypeScript-based CLI for building Chrome Manifest V3 extensions with modern to
 - 🌐 **Browser Preview** - Auto-launch Chrome with your extension loaded
 - 🔄 **Hot Module Replacement** - See changes instantly without manual reload
 - ✅ TypeScript-first development experience
-- 🎨 Multiple templates: Vanilla JavaScript and React (Vue, Svelte coming soon)
+- 🎨 Multiple templates: Vanilla JavaScript, React, and Vue (Svelte coming soon)
 - 🔍 Comprehensive manifest validation with helpful error messages
 - 🌐 Cross-platform support (Windows, macOS, Linux)
 
@@ -83,6 +83,7 @@ extn create my-extension --directory ./projects
 - `-t, --template <name>` - Template to use (default: `vanilla`)
   - `vanilla` - Plain JavaScript/TypeScript template
   - `react` - React 18 with TypeScript and modern tooling
+  - `vue` - Vue 3 with TypeScript and Composition API
 - `-d, --directory <path>` - Target directory (default: `./<project-name>`)
 
 **Examples:**
@@ -93,6 +94,9 @@ extn create my-extension
 
 # Create with React template
 extn create my-extension --template react
+
+# Create with Vue template
+extn create my-extension --template vue
 
 # Create in a specific directory
 extn create my-extension --directory ~/projects
@@ -162,6 +166,18 @@ When using the React template (`--template react`), you also get:
 - **Testing Setup** - Vitest with React Testing Library pre-configured
 - **Type Definitions** - Full type support for Chrome extension APIs
 
+### Vue Template Features
+
+When using the Vue template (`--template vue`), you also get:
+
+- **Vue 3** - Latest Vue with Composition API and `<script setup>` syntax
+- **TypeScript** - Strict type checking for Vue components and Chrome APIs
+- **Single File Components** - Vue SFC format with template, script, and style
+- **Vue Components** - Example popup and content script as Vue components
+- **Hot Module Replacement** - Instant updates during development
+- **Testing Setup** - Vitest with Vue Test Utils pre-configured
+- **Type Definitions** - Full type support for Chrome extension APIs
+
 ## Development Workflow
 
 After creating a project:
@@ -225,13 +241,13 @@ Base Template (Browser Preview)
 
 ↓ Extended by ↓
 
-Vanilla Template              React Template
-├── Vite configuration       ├── Vite + React configuration
-├── Basic extension          ├── React 18 + TypeScript
-└── Vanilla JavaScript       ├── Modern JSX transform
-                             └── React component structure
+Vanilla Template              React Template              Vue Template
+├── Vite configuration       ├── Vite + React config    ├── Vite + Vue config
+├── Basic extension          ├── React 18 + TypeScript  ├── Vue 3 + TypeScript
+└── Vanilla JavaScript       ├── Modern JSX transform   ├── Composition API
+                             └── React components       └── Vue SFC components
 
-(Vue, Svelte templates coming soon - all will include Browser Preview)
+(Svelte template coming soon - all will include Browser Preview)
 ```
 
 **What this means for you:**

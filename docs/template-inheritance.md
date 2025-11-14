@@ -18,15 +18,15 @@ The template inheritance system enables templates to extend a base template, inh
 │  - .dev-profile/ in .gitignore                               │
 │  - Dev workflow documentation                                │
 └────────┬──────────────────────────────────┬────────────────┘
-         │                                   │
-         ▼                                   ▼
-┌────────────────────────┐         ┌────────────────────────┐
-│   Vanilla Template     │         │   React Template       │
-│   - vite.config.js     │         │   - vite.config.ts     │
-│   - Vanilla deps       │         │   - React 18 + TS      │
-│   - Basic structure    │         │   - React components   │
-└────────────────────────┘         │   - Testing setup      │
-                                    └────────────────────────┘
+         │                                   │                                   │
+         ▼                                   ▼                                   ▼
+┌────────────────────────┐         ┌────────────────────────┐         ┌────────────────────────┐
+│   Vanilla Template     │         │   React Template       │         │   Vue Template         │
+│   - vite.config.js     │         │   - vite.config.ts     │         │   - vite.config.ts     │
+│   - Vanilla deps       │         │   - React 18 + TS      │         │   - Vue 3 + TS         │
+│   - Basic structure    │         │   - React components   │         │   - Vue SFC components │
+└────────────────────────┘         │   - Testing setup      │         │   - Testing setup      │
+                                    └────────────────────────┘         └────────────────────────┘
 ```
 
 ## Base Template Structure
@@ -617,7 +617,7 @@ npm run type-check
 npm run build
 ```
 
-### Example 3: Vue Template (Future)
+### Example 3: Vue Template
 
 ```json
 {
@@ -626,14 +626,15 @@ npm run build
   "description": "Chrome extension with Vue 3 and TypeScript",
   "extends": "base",
   "dependencies": [
-    "vue@^3.3.0"
+    "vue@^3.5.0"
   ],
   "devDependencies": [
     "@crxjs/vite-plugin@^2.2.1",
-    "@vitejs/plugin-vue@^4.0.0",
-    "typescript@^5.0.0",
+    "@types/chrome@^0.0.270",
+    "@vitejs/plugin-vue@^5.2.0",
+    "typescript@^5.6.0",
     "vite@^7.2.2",
-    "vue-tsc@^1.8.0"
+    "vue-tsc@^2.1.0"
   ],
   "scripts": {
     "build": "vue-tsc && vite build",
@@ -645,12 +646,380 @@ npm run build
 
 **Inherits from base:**
 - Browser Preview features (same as vanilla and React)
-- Consistent dev workflow
+- `dev` script with auto-launch
+- `web-ext` and `concurrently` dependencies
+- Dev workflow documentation
 
 **Adds:**
-- Vue 3 framework
+- Vue 3 with Composition API
+- TypeScript with strict mode
 - Vue-specific Vite plugin
-- Vue TypeScript compiler
+- Chrome API type definitions
+- Type checking script
+- Vue SFC component structure (popup, content script)
+
+**Project Structure:**
+```
+my-vue-extension/
+├── src/
+│   ├── popup/
+│   │   ├── Popup.vue           # Vue popup component
+│   │   ├── popup.html          # HTML entry point
+│   │   └── main.ts             # Vue app entry
+│   ├── content/
+│   │   ├── Content.vue         # Vue content script
+│   │   └── main.ts             # Content script entry
+│   ├── background/
+│   │   └── background.ts       # Service worker
+│   └── types/
+│       └── chrome.d.ts         # Chrome API type augmentations
+├── public/
+│   └── icons/                  # Extension icons
+├── manifest.json               # Manifest V3 with Vue entry points
+├── vite.config.ts              # Vite + Vue + CRX plugins
+├── tsconfig.json               # TypeScript config for Vue
+├── vitest.config.ts            # Testing configuration
+└── web-ext-config.mjs          # Inherited from base
+```
+
+### Vue Template Details
+
+The Vue template demonstrates template inheritance with Vue 3 and the Composition API:
+
+**File Merging in Action:**
+
+1. **package.json merging:**
+   - Base provides: `dev` script, `web-ext`, `concurrently`
+   - Vue adds: `build`, `preview`, `type-check` scripts, Vue deps, TypeScript
+   - Result: Complete package.json with all scripts and dependencies
+
+2. **.gitignore merging:**
+   - Vue template: `node_modules/`, `dist/`, `.vscode/`, `*.log`, `*.tsbuildinfo`
+   - Base partial: `.dev-profile/` (Browser Preview profile)
+   - Result: Complete .gitignore with both sets of patterns
+
+3. **README merging:**
+   - Vue template: Project overview, Vue features, TypeScript usage
+   - Base partial: Development workflow with `npm run dev` instructions
+   - Result: Complete README with Vue docs + Browser Preview workflow
+
+**Vue-Specific Features:**
+
+- **Composition API**: Modern `<script setup>` syntax for cleaner component code
+- **Strict TypeScript**: Full type safety for Vue components and Chrome APIs
+- **Single File Components**: Template, script, and style in one `.vue` file
+- **Scoped Styles**: Component-scoped CSS with `<style scoped>`
+- **Testing Ready**: Vitest + Vue Test Utils pre-configured
+- **HMR Support**: Hot module replacement for instant feedback during development
+
+**Chrome Extension Integration:**
+
+The Vue template shows how to integrate Vue with Chrome extension APIs:
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const count = ref(0);
+const currentTab = ref<chrome.tabs.Tab | null>(null);
+
+onMounted(() => {
+  // Load saved count from storage
+  chrome.storage.local.get(['count'], (result) => {
+    if (result.count) count.value = result.count;
+  });
+
+  // Get current tab
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    currentTab.value = tabs[0];
+  });
+});
+
+const handleIncrement = () => {
+  count.value++;
+  chrome.storage.local.set({ count: count.value });
+};
+</script>
+
+<template>
+  <div class="popup">
+    <h1>My Extension</h1>
+    <p>Count: {{ count }}</p>
+    <button @click="handleIncrement">Increment</button>
+    <p v-if="currentTab">Current tab: {{ currentTab.title }}</p>
+  </div>
+</template>
+
+<style scoped>
+.popup {
+  width: 300px;
+  padding: 20px;
+}
+
+button {
+  padding: 8px 16px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+</style>
+```
+
+**Development Experience:**
+
+```bash
+# Create Vue extension
+extn create my-vue-extension --template vue
+
+# Install dependencies
+cd my-vue-extension
+npm install
+
+# Start development (inherited from base)
+npm run dev
+# ✨ Vite builds with Vue HMR
+# 🚀 Chrome launches with extension loaded
+# 🔄 Changes update instantly
+
+# Type check (Vue-specific)
+npm run type-check
+
+# Build for production (Vue-specific)
+npm run build
+```
+
+## Using the Vue Template
+
+### Getting Started
+
+Create a new Vue-based Chrome extension:
+
+```bash
+extn create my-vue-extension --template vue
+cd my-vue-extension
+npm install
+npm run dev
+```
+
+### Vue Template Structure
+
+The Vue template provides a complete Vue 3 development environment:
+
+**Configuration Files:**
+- `tsconfig.json` - TypeScript config with Vue SFC support
+- `vite.config.ts` - Vite with Vue and CRX plugins
+- `vitest.config.ts` - Testing configuration
+- `manifest.json` - Manifest V3 with TypeScript entry points
+- `web-ext-config.mjs` - Inherited from base template
+
+**Source Structure:**
+- `src/popup/` - Vue popup component with Chrome storage example
+- `src/content/` - Vue content script component
+- `src/background/` - Background service worker (TypeScript)
+- `src/types/` - Chrome API type augmentations
+
+### Adding New Components
+
+**Add a new popup page:**
+
+1. Create component: `src/options/Options.vue`
+2. Create entry: `src/options/main.ts`
+3. Create HTML: `src/options/options.html`
+4. Update manifest: Add to `chrome_url_overrides` or `options_page`
+
+**Add a new content script:**
+
+1. Create component: `src/content/MyContent.vue`
+2. Create entry: `src/content/my-content.ts`
+3. Update manifest: Add to `content_scripts` array
+
+### Vue + Chrome APIs
+
+**Using Chrome Storage:**
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const data = ref(null);
+
+onMounted(() => {
+  chrome.storage.local.get(['key'], (result) => {
+    data.value = result.key;
+  });
+});
+
+const saveData = (value: any) => {
+  chrome.storage.local.set({ key: value });
+  data.value = value;
+};
+</script>
+
+<template>
+  <div>
+    <p>Data: {{ data }}</p>
+    <button @click="saveData('new value')">Save</button>
+  </div>
+</template>
+```
+
+**Using Chrome Messaging:**
+
+```vue
+<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
+
+const handleMessage = (message: any, sender: any, sendResponse: any) => {
+  console.log('Message received:', message);
+  sendResponse({ status: 'ok' });
+};
+
+onMounted(() => {
+  chrome.runtime.onMessage.addListener(handleMessage);
+});
+
+onUnmounted(() => {
+  chrome.runtime.onMessage.removeListener(handleMessage);
+});
+
+const sendMessage = () => {
+  chrome.runtime.sendMessage({ type: 'HELLO' });
+};
+</script>
+
+<template>
+  <button @click="sendMessage">Send Message</button>
+</template>
+```
+
+### Testing Vue Components
+
+The Vue template includes Vitest and Vue Test Utils:
+
+```bash
+# Run tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**Example test:**
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import Popup from '../Popup.vue';
+
+// Mock Chrome API
+global.chrome = {
+  storage: {
+    local: {
+      get: vi.fn(),
+      set: vi.fn(),
+    },
+  },
+  tabs: {
+    query: vi.fn(),
+  },
+} as any;
+
+describe('Popup', () => {
+  it('renders correctly', () => {
+    const wrapper = mount(Popup);
+    expect(wrapper.text()).toContain('my-vue-extension');
+  });
+
+  it('increments count', async () => {
+    const wrapper = mount(Popup);
+    const button = wrapper.find('button');
+    await button.trigger('click');
+    expect(chrome.storage.local.set).toHaveBeenCalled();
+  });
+});
+```
+
+### TypeScript Tips
+
+**Chrome API Types:**
+
+The template includes type augmentations in `src/types/chrome.d.ts`:
+
+```typescript
+// Extend Chrome API types
+declare namespace chrome.storage {
+  interface StorageArea {
+    get(keys: string[]): Promise<{ [key: string]: any }>;
+    set(items: { [key: string]: any }): Promise<void>;
+  }
+}
+```
+
+**Component Props:**
+
+```vue
+<script setup lang="ts">
+interface Props {
+  initialCount?: number;
+  onCountChange?: (count: number) => void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialCount: 0,
+});
+
+const emit = defineEmits<{
+  countChange: [count: number];
+}>();
+</script>
+```
+
+### Performance Optimization
+
+**Async Components:**
+
+```vue
+<script setup lang="ts">
+import { defineAsyncComponent } from 'vue';
+
+const HeavyComponent = defineAsyncComponent(() =>
+  import('./HeavyComponent.vue')
+);
+</script>
+
+<template>
+  <Suspense>
+    <template #default>
+      <HeavyComponent />
+    </template>
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+  </Suspense>
+</template>
+```
+
+**Computed Properties:**
+
+```vue
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+const data = ref<any[]>([]);
+
+const processedData = computed(() => {
+  return data.value.map(item => /* expensive operation */);
+});
+</script>
+
+<template>
+  <div v-for="item in processedData" :key="item.id">
+    {{ item }}
+  </div>
+</template>
+```
 
 ## Using the React Template
 
