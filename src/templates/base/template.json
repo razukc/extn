@@ -4,7 +4,7 @@
   "description": "Shared Browser Preview features for all templates",
   "dependencies": [],
   "devDependencies": [
-    "web-ext@^8.3.0",
+    "web-ext@^9.1.0",
     "concurrently@^9.1.0"
   ],
   "scripts": {

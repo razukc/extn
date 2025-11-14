@@ -3,7 +3,7 @@
     "dev": "concurrently \"vite\" \"web-ext run --target chromium --arg=--auto-open-devtools-for-tabs --source-dir=./dist --config=./web-ext-config.mjs\""
   },
   "devDependencies": {
-    "web-ext": "^8.3.0",
+    "web-ext": "^9.1.0",
     "concurrently": "^9.1.0"
   }
 }
