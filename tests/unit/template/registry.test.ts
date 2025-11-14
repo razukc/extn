@@ -437,6 +437,124 @@ describe('TemplateRegistry', () => {
     });
   });
 
+  describe('Vue template registration', () => {
+    it('should load vue template correctly', () => {
+      const vueTemplate = registry.get('vue');
+
+      expect(vueTemplate).toBeDefined();
+      expect(vueTemplate?.id).toBe('vue');
+      expect(vueTemplate?.name).toBe('Vue');
+      expect(vueTemplate?.description).toContain('Vue 3');
+    });
+
+    it('should load vue template with extends field', () => {
+      const vueTemplate = registry.get('vue');
+
+      expect(vueTemplate).toBeDefined();
+      expect(vueTemplate?.extends).toBe('base');
+    });
+
+    it('should load vue template with correct dependencies', () => {
+      const vueTemplate = registry.get('vue');
+
+      expect(vueTemplate?.dependencies).toBeDefined();
+      expect(Array.isArray(vueTemplate?.dependencies)).toBe(true);
+      expect(vueTemplate?.dependencies).toContain('vue@^3.5.0');
+    });
+
+    it('should load vue template with correct devDependencies', () => {
+      const vueTemplate = registry.get('vue');
+
+      expect(vueTemplate?.devDependencies).toBeDefined();
+      expect(Array.isArray(vueTemplate?.devDependencies)).toBe(true);
+      expect(vueTemplate?.devDependencies).toContain('@crxjs/vite-plugin@^2.2.1');
+      expect(vueTemplate?.devDependencies).toContain('@types/chrome@^0.0.270');
+      expect(vueTemplate?.devDependencies).toContain('@vitejs/plugin-vue@^5.2.0');
+      expect(vueTemplate?.devDependencies).toContain('typescript@^5.6.0');
+      expect(vueTemplate?.devDependencies).toContain('vite@^7.2.2');
+      expect(vueTemplate?.devDependencies).toContain('vue-tsc@^2.1.0');
+    });
+
+    it('should load vue template with correct scripts', () => {
+      const vueTemplate = registry.get('vue');
+
+      expect(vueTemplate?.scripts).toBeDefined();
+      expect(vueTemplate?.scripts?.build).toBe('vue-tsc && vite build');
+      expect(vueTemplate?.scripts?.preview).toBe('vite preview');
+      expect(vueTemplate?.scripts?.['type-check']).toBe('vue-tsc --noEmit');
+      expect(vueTemplate?.scripts?.test).toBe('vitest --run');
+      expect(vueTemplate?.scripts?.['test:ui']).toBe('vitest --ui');
+    });
+
+    it('should merge vue template with base template', () => {
+      const mergedTemplate = registry.getWithBase('vue');
+
+      expect(mergedTemplate).toBeDefined();
+      expect(mergedTemplate?.id).toBe('vue');
+      expect(mergedTemplate?.extends).toBe('base');
+    });
+
+    it('should merge devDependencies from base and vue', () => {
+      const mergedTemplate = registry.getWithBase('vue');
+
+      expect(mergedTemplate?.devDependencies).toBeDefined();
+      // Base dependencies
+      expect(mergedTemplate?.devDependencies).toContain('web-ext@^8.3.0');
+      expect(mergedTemplate?.devDependencies).toContain('concurrently@^9.1.0');
+      // Vue dependencies
+      expect(mergedTemplate?.devDependencies).toContain('@crxjs/vite-plugin@^2.2.1');
+      expect(mergedTemplate?.devDependencies).toContain('@vitejs/plugin-vue@^5.2.0');
+      expect(mergedTemplate?.devDependencies).toContain('typescript@^5.6.0');
+      expect(mergedTemplate?.devDependencies).toContain('vite@^7.2.2');
+      expect(mergedTemplate?.devDependencies).toContain('vue-tsc@^2.1.0');
+    });
+
+    it('should merge dependencies from base and vue', () => {
+      const mergedTemplate = registry.getWithBase('vue');
+
+      expect(mergedTemplate?.dependencies).toBeDefined();
+      expect(Array.isArray(mergedTemplate?.dependencies)).toBe(true);
+      // Vue dependencies
+      expect(mergedTemplate?.dependencies).toContain('vue@^3.5.0');
+    });
+
+    it('should merge scripts from base and vue', () => {
+      const mergedTemplate = registry.getWithBase('vue');
+
+      expect(mergedTemplate?.scripts).toBeDefined();
+      // Should have dev script from base
+      expect(mergedTemplate?.scripts?.dev).toBeDefined();
+      expect(mergedTemplate?.scripts?.dev).toContain('concurrently');
+      // Should have build, preview, type-check, and test scripts from vue
+      expect(mergedTemplate?.scripts?.build).toBe('vue-tsc && vite build');
+      expect(mergedTemplate?.scripts?.preview).toBe('vite preview');
+      expect(mergedTemplate?.scripts?.['type-check']).toBe('vue-tsc --noEmit');
+      expect(mergedTemplate?.scripts?.test).toBe('vitest --run');
+      expect(mergedTemplate?.scripts?.['test:ui']).toBe('vitest --ui');
+    });
+
+    it('should have all scripts after merging vue template', () => {
+      const mergedTemplate = registry.getWithBase('vue');
+
+      expect(mergedTemplate?.scripts).toBeDefined();
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('dev');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('build');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('preview');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('type-check');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('test');
+      expect(Object.keys(mergedTemplate?.scripts || {})).toContain('test:ui');
+    });
+
+    it('should appear in available templates list', () => {
+      const templates = registry.list();
+      const vueTemplate = templates.find(t => t.id === 'vue');
+
+      expect(vueTemplate).toBeDefined();
+      expect(vueTemplate?.name).toBe('Vue');
+      expect(vueTemplate?.description).toContain('Vue 3');
+    });
+  });
+
   describe('React template registration', () => {
     it('should load react template correctly', () => {
       const reactTemplate = registry.get('react');

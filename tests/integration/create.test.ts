@@ -1028,4 +1028,184 @@ describe('create command integration', () => {
       }
     });
   });
+
+  describe('Vue template', () => {
+    it('should load vue template correctly', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-vue-extension';
+        
+        const result = await createCommand(projectName, {
+          template: 'vue',
+          directory: testDir,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.projectPath).toBe(path.join(testDir, projectName));
+
+        const projectPath = path.join(testDir, projectName);
+
+        // Verify core files exist
+        expect(await fs.pathExists(path.join(projectPath, 'package.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'manifest.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'vite.config.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'tsconfig.json'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, '.gitignore'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'README.md'))).toBe(true);
+
+        // Verify Vue source files exist
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/popup.html'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/Popup.vue'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/popup/main.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/content/Content.vue'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/content/main.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/background/background.ts'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'src/types/chrome.d.ts'))).toBe(true);
+
+        // Verify icon files exist
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon16.png'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon48.png'))).toBe(true);
+        expect(await fs.pathExists(path.join(projectPath, 'public/icons/icon128.png'))).toBe(true);
+
+        // Verify base template files exist
+        expect(await fs.pathExists(path.join(projectPath, 'web-ext-config.mjs'))).toBe(true);
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should merge package.json correctly with base template', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-vue-package-merge';
+        
+        await createCommand(projectName, {
+          template: 'vue',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = await fs.readJson(packageJsonPath);
+
+        // Verify dev script is inherited from base template
+        expect(packageJson.scripts).toBeDefined();
+        expect(packageJson.scripts.dev).toBeDefined();
+        expect(packageJson.scripts.dev).toContain('concurrently');
+        expect(packageJson.scripts.dev).toContain('vite');
+        expect(packageJson.scripts.dev).toContain('web-ext run');
+
+        // Verify web-ext and concurrently dependencies are included
+        expect(packageJson.devDependencies).toBeDefined();
+        expect(packageJson.devDependencies['web-ext']).toBe('^8.3.0');
+        expect(packageJson.devDependencies.concurrently).toBe('^9.1.0');
+
+        // Verify Vue-specific scripts are included
+        expect(packageJson.scripts.build).toBe('vue-tsc && vite build');
+        expect(packageJson.scripts.preview).toBe('vite preview');
+        expect(packageJson.scripts['type-check']).toBe('vue-tsc --noEmit');
+        expect(packageJson.scripts.test).toBe('vitest --run');
+        expect(packageJson.scripts['test:ui']).toBe('vitest --ui');
+
+        // Verify Vue-specific dependencies are included
+        expect(packageJson.dependencies).toBeDefined();
+        expect(packageJson.dependencies.vue).toBe('^3.5.0');
+
+        // Verify Vue-specific devDependencies are included
+        expect(packageJson.devDependencies['@crxjs/vite-plugin']).toBe('^2.2.1');
+        expect(packageJson.devDependencies['@types/chrome']).toBe('^0.0.270');
+        expect(packageJson.devDependencies['@vitejs/plugin-vue']).toBe('^5.2.0');
+        expect(packageJson.devDependencies.typescript).toBe('^5.6.0');
+        expect(packageJson.devDependencies.vite).toBe('^7.2.2');
+        expect(packageJson.devDependencies['vue-tsc']).toBe('^2.1.0');
+
+        // Verify package.json structure
+        expect(packageJson.name).toBe(projectName);
+        expect(packageJson.version).toBe('1.0.0');
+        expect(packageJson.type).toBe('module');
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should generate valid manifest.json for Vue', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'test-vue-extension';
+        
+        await createCommand(projectName, {
+          template: 'vue',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        const manifestPath = path.join(projectPath, 'manifest.json');
+        const manifest = await fs.readJson(manifestPath);
+
+        // Verify manifest structure
+        expect(manifest.manifest_version).toBe(3);
+        expect(manifest.name).toBe(projectName);
+        expect(manifest.version).toBe('1.0.0');
+
+        // Verify action configuration points to Vue popup
+        expect(manifest.action).toBeDefined();
+        expect(manifest.action.default_popup).toBe('src/popup/popup.html');
+
+        // Verify background service worker
+        expect(manifest.background).toBeDefined();
+        expect(manifest.background.service_worker).toBe('src/background/background.ts');
+        expect(manifest.background.type).toBe('module');
+
+        // Verify content scripts point to Vue entry
+        expect(manifest.content_scripts).toBeDefined();
+        expect(Array.isArray(manifest.content_scripts)).toBe(true);
+        expect(manifest.content_scripts[0].js).toContain('src/content/main.ts');
+
+        // Verify permissions
+        expect(manifest.permissions).toBeDefined();
+        expect(manifest.permissions).toContain('storage');
+        expect(manifest.permissions).toContain('tabs');
+
+        // Verify web_accessible_resources for content script
+        expect(manifest.web_accessible_resources).toBeDefined();
+        expect(Array.isArray(manifest.web_accessible_resources)).toBe(true);
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+
+    it('should inherit web-ext-config.mjs from base template', async () => {
+      const testDir = await createTestDir();
+      try {
+        const projectName = 'vue-webext-config-test';
+        
+        await createCommand(projectName, {
+          template: 'vue',
+          directory: testDir,
+        });
+
+        const projectPath = path.join(testDir, projectName);
+        
+        // Verify web-ext-config.mjs is copied from base template
+        const webExtConfigPath = path.join(projectPath, 'web-ext-config.mjs');
+        expect(await fs.pathExists(webExtConfigPath)).toBe(true);
+        
+        const webExtConfig = await fs.readFile(webExtConfigPath, 'utf-8');
+        
+        // Verify the file contains expected configuration
+        expect(webExtConfig).toContain('export default');
+        expect(webExtConfig).toContain('sourceDir');
+        expect(webExtConfig).toContain('./dist');
+        expect(webExtConfig).toContain('startUrl');
+        expect(webExtConfig).toContain('chrome://extensions');
+        
+        // Verify the dev script in package.json references this config file
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        const packageJson = await fs.readJson(packageJsonPath);
+        expect(packageJson.scripts.dev).toContain('--config=./web-ext-config.mjs');
+      } finally {
+        await cleanupTestDir(testDir);
+      }
+    });
+  });
 });
