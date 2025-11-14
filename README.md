@@ -158,7 +158,7 @@ Projects created with extn include:
 
 When using the React template (`--template react`), you also get:
 
-- **React 18** - Latest React with modern hooks and concurrent features
+- **React 19** - Latest React with modern hooks and concurrent features
 - **TypeScript** - Strict type checking for React components and Chrome APIs
 - **Modern JSX Transform** - No need to import React in every file
 - **React Components** - Example popup and content script as React components
@@ -243,7 +243,7 @@ Base Template (Browser Preview)
 
 Vanilla Template              React Template              Vue Template
 ├── Vite configuration       ├── Vite + React config    ├── Vite + Vue config
-├── Basic extension          ├── React 18 + TypeScript  ├── Vue 3 + TypeScript
+├── Basic extension          ├── React 19 + TypeScript  ├── Vue 3 + TypeScript
 └── Vanilla JavaScript       ├── Modern JSX transform   ├── Composition API
                              └── React components       └── Vue SFC components
 
@@ -254,7 +254,7 @@ Vanilla Template              React Template              Vue Template
 - 🎯 Every template type gets Browser Preview automatically
 - 🔧 Framework-specific features stay separate from dev workflow
 - 📦 Consistent development experience across all templates
-- ⚛️ Choose your preferred framework (Vanilla or React)
+- ⚛️ Choose your preferred framework (Vanilla, React or Vue)
 - 🚀 Future templates will inherit Browser Preview features
 
 ## Troubleshooting
