@@ -1,10 +1,10 @@
 # {{projectName}}
 
-A Chrome Manifest V3 extension built with React 18, TypeScript, and Vite.
+A Chrome Manifest V3 extension built with React 19, TypeScript, and Vite.
 
 ## Features
 
-- ⚛️ React 18 with modern hooks and functional components
+- ⚛️ React 19 with modern hooks and functional components
 - 📘 TypeScript with strict mode for type safety
 - ⚡ Vite-powered build system with HMR
 - 📦 Manifest V3 Chrome extension
