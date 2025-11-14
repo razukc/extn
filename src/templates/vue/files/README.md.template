@@ -1,0 +1,231 @@
+# {{projectName}}
+
+A Chrome Manifest V3 extension built with Vue 3, TypeScript, and Vite.
+
+## Features
+
+- 🎯 Vue 3 with Composition API and `<script setup>` syntax
+- 📘 TypeScript with strict mode for type safety
+- ⚡ Vite-powered build system with HMR
+- 📦 Manifest V3 Chrome extension
+- 🎨 Example popup, content script, and background service worker
+- 🔧 Modern development workflow with Browser Preview
+
+## Project Structure
+
+```
+{{projectName}}/
+├── src/
+│   ├── popup/
+│   │   ├── Popup.vue       # Main popup Vue component
+│   │   ├── popup.html      # HTML entry point
+│   │   └── main.ts         # Vue app entry
+│   ├── content/
+│   │   ├── Content.vue     # Content script Vue component
+│   │   └── main.ts         # Content script entry
+│   ├── background/
+│   │   └── background.ts   # Service worker
+│   └── types/
+│       └── chrome.d.ts     # Chrome API type definitions
+├── public/
+│   └── icons/              # Extension icons (16, 48, 128)
+├── manifest.json           # Chrome extension manifest (V3)
+├── package.json            # Project dependencies
+├── tsconfig.json           # TypeScript configuration
+├── vite.config.ts          # Vite + Vue + CRX configuration
+└── web-ext-config.mjs      # Browser development configuration
+```
+
+## Getting Started
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+<!-- DEV_WORKFLOW_PARTIAL_PLACEHOLDER -->
+
+### Build for Production
+
+Build the extension for production:
+
+```bash
+npm run build
+```
+
+This creates an optimized build in the `dist/` folder with:
+- Compiled TypeScript to JavaScript
+- Minified Vue bundles
+- Optimized assets
+- Validated manifest
+- Ready for Chrome Web Store submission
+
+### Type Check
+
+Run TypeScript type checking without emitting files:
+
+```bash
+npm run type-check
+```
+
+### Load in Chrome
+
+1. Open Chrome and navigate to `chrome://extensions`
+2. Enable "Developer mode" (toggle in top-right corner)
+3. Click "Load unpacked"
+4. Select the `dist` folder from your project
+
+## Available Scripts
+
+- `npm run dev` - Start development server with browser auto-launch and HMR
+- `npm run build` - Type check and build for production
+- `npm run preview` - Preview production build
+- `npm run type-check` - Run TypeScript type checking
+
+## Development Guide
+
+### Adding a New Popup Page
+
+1. Create a new Vue component in `src/popup/`
+2. Import and use Chrome APIs with TypeScript types
+3. Use Vue's Composition API with `<script setup>` for reactive state
+
+Example:
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const data = ref<string>('');
+
+onMounted(() => {
+  chrome.storage.local.get(['key'], (result) => {
+    data.value = result.key || '';
+  });
+});
+</script>
+
+<template>
+  <div>{{ data }}</div>
+</template>
+
+<style scoped>
+/* Component styles */
+</style>
+```
+
+### Adding a Content Script
+
+1. Create a new Vue component in `src/content/`
+2. Create an entry point that mounts the component to the page
+3. Add the script to `manifest.json` content_scripts array
+
+Example:
+```vue
+<!-- src/content/MyContent.vue -->
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const visible = ref(true);
+</script>
+
+<template>
+  <div v-if="visible">Injected content</div>
+</template>
+
+<style scoped>
+/* Component styles */
+</style>
+```
+
+```typescript
+// src/content/my-content.ts
+import { createApp } from 'vue';
+import MyContent from './MyContent.vue';
+
+const container = document.createElement('div');
+container.id = 'my-extension-content';
+document.body.appendChild(container);
+
+createApp(MyContent).mount(container);
+```
+
+### Adding a Background Script
+
+Background scripts don't use Vue. Add TypeScript files directly:
+
+```typescript
+// src/background/my-handler.ts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Handle messages
+  sendResponse({ status: 'ok' });
+  return true;
+});
+```
+
+### Using Chrome APIs
+
+Chrome APIs are fully typed. Import types from the global `chrome` namespace:
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const currentTab = ref<chrome.tabs.Tab | null>(null);
+
+onMounted(async () => {
+  // Storage API
+  const result = await chrome.storage.local.get(['key']);
+  console.log(result.key);
+  
+  await chrome.storage.local.set({ key: 'value' });
+  
+  // Tabs API
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  currentTab.value = tabs[0];
+  
+  // Runtime API
+  chrome.runtime.sendMessage({ type: 'ACTION' }, (response) => {
+    console.log(response);
+  });
+});
+</script>
+```
+
+## Customization
+
+### Manifest
+
+Edit `manifest.json` to customize your extension:
+- Change name, description, and version
+- Add or remove permissions
+- Configure content script match patterns
+- Update icons and popup settings
+
+### TypeScript Configuration
+
+Edit `tsconfig.json` to customize TypeScript:
+- Adjust compiler options
+- Add path aliases
+- Configure strict mode settings
+
+### Vite Configuration
+
+Edit `vite.config.ts` to customize the build:
+- Add Vite plugins
+- Configure dev server options
+- Modify build optimization settings
+- Add path aliases (must match tsconfig.json)
+
+## Resources
+
+- [Vue 3 Documentation](https://vuejs.org/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+- [Chrome Extension Documentation](https://developer.chrome.com/docs/extensions/)
+- [Manifest V3 Guide](https://developer.chrome.com/docs/extensions/mv3/intro/)
+- [Vite Documentation](https://vitejs.dev/)
+- [@crxjs/vite-plugin Documentation](https://crxjs.dev/vite-plugin/)
+
+## License
+
+MIT

@@ -66,6 +66,18 @@ export class TemplateRegistry {
         files: reactFilesPath,
       });
     }
+
+    // Load vue template
+    const vueMetaPath = path.join(templatesDir, 'vue', 'template.json');
+    const vueFilesPath = path.join(templatesDir, 'vue', 'files');
+
+    if (fs.existsSync(vueMetaPath)) {
+      const metadata = fs.readJsonSync(vueMetaPath);
+      this.templates.set('vue', {
+        ...metadata,
+        files: vueFilesPath,
+      });
+    }
   }
 
   /**
